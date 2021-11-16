@@ -74,8 +74,6 @@ class UnifiController extends IPSModule
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
     {
-        IPS_LogMessage("MessageSink", "Message from SenderID ".$SenderID." with Message ".$Message."\r\n Data: ".print_r($Data, true));
-
         switch ($Message) {
             case IPS_KERNELSHUTDOWN:
                 $parentID = $this->GetConnectionID();
@@ -161,12 +159,16 @@ class UnifiController extends IPSModule
                     }
                     $this->MUSetBuffer('Data', '');
                     $this->MUSetBuffer('State', 2);
+
+                    $this->SendDebug('State', '2', 0);
+
                     return;
                 } else {
                     $this->SendDebug('Incomplete handshake response', $data, 0);
                     throw new Exception("Incomplete handshake response received");
                 }
             }  catch (Exception $exc) {
+                $this->SendDebug('Error', $exc->GetMessage(), 0);
                 $this->Disconnect();
                 trigger_error($exc->getMessage(), E_USER_NOTICE);
                 return;
@@ -187,6 +189,8 @@ class UnifiController extends IPSModule
             }
             */
         }
+
+        $this->SendDebug('State', '2', 0);
 
         if(strlen($data) > 1024 * 1024) {
             $this->Disconnect();
