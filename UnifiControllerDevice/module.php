@@ -52,13 +52,13 @@ class UnifiController extends IPSModule
     {
         $parentID = $this->GetConnectionID();
 
-        if (IPS_GetProperty($ParentID, 'Open')) {
+        if (IPS_GetProperty($parentID, 'Open')) {
             IPS_SetProperty($parentID, 'Open', false);
             @IPS_ApplyChanges($parentID);
         }
 
-        if (!IPS_GetProperty($ParentID, 'Open')) {
-            IPS_SetProperty($ParentID, 'Open', true);
+        if (!IPS_GetProperty($parentID, 'Open')) {
+            IPS_SetProperty($parentID, 'Open', true);
         }
 
         parent::ApplyChanges();
