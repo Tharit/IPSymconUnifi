@@ -15,6 +15,8 @@ class UnifiController extends IPSModule
 
         // properties
         $this->RegisterPropertyString('ip', '');
+        $this->RegisterPropertyString('username', '');
+        $this->RegisterPropertyString('password', '');
 
         // timers
 //        $this->RegisterTimer("PingTimer", 5000, 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "PingTimer");');
@@ -47,6 +49,17 @@ class UnifiController extends IPSModule
      */
     public function ApplyChanges()
     {
+        $parentID = $this->GetConnectionID();
+
+        if (IPS_GetProperty($ParentID, 'Open')) {
+            IPS_SetProperty($parentID, 'Open', false);
+            @IPS_ApplyChanges($parentID);
+        }
+
+        if (!IPS_GetProperty($ParentID, 'Open')) {
+            IPS_SetProperty($ParentID, 'Open', true);
+        }
+
         parent::ApplyChanges();
     }
 
@@ -68,7 +81,7 @@ class UnifiController extends IPSModule
                 // reset state
                 $this->ResetState();
 
-                $this->SendDebug('CHANGESTATUS', $Data, 0);
+                $this->SendDebug('CHANGESTATUS', json_encode($Data, 0);
 
                 // if parent became active: connect
                 if ($Data[0] === IS_ACTIVE) {
@@ -102,6 +115,41 @@ class UnifiController extends IPSModule
     }
 
     private function Connect() {
+        $this->Login();
+
         CSCK_SendText($this->GetConnectionID(), '');
+    }
+
+    private function Login() {
+        $url = "https://" . $this->ReadPropertyString("ip") . "/api/auth/login";
+        $username = $this->ReadPropertyString("username");
+        $password = $this->ReadPropertyString("password");
+
+        $headers = [];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADERFUNCTION, function( $curl, $header_line ) use (&$headers) {
+            $idx = strpos($header_line,':');
+            if($idx >= 1) {
+                $name = substr($header_line, 0, $idx);
+                $value = trim(substr($header_line, $idx + 1));
+                $headers[$name] = $value;
+            }
+            return strlen($header_line);
+        });
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(["username" => $username,"password" => $password]));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+        curl_exec($ch);
+        curl_close($ch);
+
+        $cookie = explode(';', $headers['Set-Cookie'])[0];
+
+        $this->SendDebug('Cookie', $cookie, 0);
     }
 }

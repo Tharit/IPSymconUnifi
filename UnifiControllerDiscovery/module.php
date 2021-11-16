@@ -186,6 +186,7 @@ class UnifiControllerDiscovery extends IPSModule
 
                 $config_list[] = [
                     'instanceID' => $instanceID,
+                    'name'       => $device['name'],
                     'ip'         => $device['ip'],
                     'type'       => $device['type'],
                     'create'     => [
@@ -218,6 +219,7 @@ class UnifiControllerDiscovery extends IPSModule
     {
         $controllers = [
             [
+                "name" => "UDM Pro",
                 "type" => "UDM Pro",
                 "ip" => "192.168.1.1"
             ]
