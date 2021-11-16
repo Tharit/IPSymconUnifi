@@ -1,6 +1,7 @@
 <?php
 
 require_once(__DIR__ . '/../libs/ModuleUtilities.php');
+require_once(__DIR__ . '/../libs/Websocket.php');
 
 class UnifiController extends IPSModule
 {
@@ -20,7 +21,7 @@ class UnifiController extends IPSModule
         $this->RegisterPropertyString('password', '');
 
         // timers
-//        $this->RegisterTimer("PingTimer", 5000, 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "PingTimer");');
+        $this->RegisterTimer("PingTimer", 45000, 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "PingTimer");');
 
         // variables
         /*
@@ -33,6 +34,7 @@ class UnifiController extends IPSModule
 
         // messages
         $this->RegisterMessage(0, IPS_KERNELSTARTED);
+        $this->RegisterMessage(0, IPS_KERNELSHUTDOWN);
         $this->RegisterMessage($this->InstanceID, FM_CONNECT);
         $this->RegisterMessage($this->InstanceID, FM_DISCONNECT);
 
@@ -53,6 +55,9 @@ class UnifiController extends IPSModule
         $parentID = $this->GetConnectionID();
 
         if (IPS_GetProperty($parentID, 'Open')) {
+            if($this->MUGetBuffer('State') === 2) {
+                $this->Send('', WebSocketOPCode::close);
+            }
             IPS_SetProperty($parentID, 'Open', false);
             @IPS_ApplyChanges($parentID);
         }
@@ -72,6 +77,14 @@ class UnifiController extends IPSModule
         IPS_LogMessage("MessageSink", "Message from SenderID ".$SenderID." with Message ".$Message."\r\n Data: ".print_r($Data, true));
 
         switch ($Message) {
+            case IPS_KERNELSHUTDOWN:
+                $parentID = $this->GetConnectionID();
+                if (IPS_GetProperty($parentID, 'Open')) {
+                    if($this->MUGetBuffer('State') === 2) {
+                        $this->Send('', WebSocketOPCode::close);
+                    }
+                }
+                break;
             case IPS_KERNELSTARTED:
             case FM_CONNECT:
                 // if new parent and it is already active: connect immediately
@@ -110,7 +123,6 @@ class UnifiController extends IPSModule
             $this->SendDebug('Error', 'Unexpected data received while connecting', 0);
         } else if($state === 1) {
             try {
-                $this->SendDebug('Data', $data, 0);
                 if (strpos($data, "\r\n\r\n") !== false) {
                     $this->SendDebug('Handshake response', $data, 0);
 
@@ -149,6 +161,7 @@ class UnifiController extends IPSModule
                     $this->MUSetBuffer('State', 2);
                     return;
                 } else {
+                    $this->SendDebug('Incomplete handshake response', $data, 0);
                     throw new Exception("Incomplete handshake response received");
                 }
             }  catch (Exception $exc) {
@@ -157,8 +170,18 @@ class UnifiController extends IPSModule
                 return;
             }
         } else if($state === 2) {
-            //$this->SendDebug('Data', $data, 0);
-            return;
+            while (true) {
+                if (strlen($data) < 2) {
+                    break;
+                }
+                $Frame = new WebSocketFrame($data);
+                if ($data == $Frame->Tail) {
+                    break;
+                }
+                $data = $Frame->Tail;
+                $Frame->Tail = null;
+                $this->DecodeFrame($Frame);
+            }
         }
 
         if(strlen($data) > 1024 * 1024) {
@@ -170,8 +193,72 @@ class UnifiController extends IPSModule
         $this->MUSetBuffer('Data', $data);
     }
 
+    /**
+     * Dekodiert die empfangenen Daten und sendet sie an die Childs bzw. bearbeitet die Anfrage.
+     *
+     * @param WebSocketFrame $Frame Ein Objekt welches einen kompletten Frame enthält.
+     */
+    private function DecodeFrame(WebSocketFrame $Frame)
+    {
+        $payloadType = $this->MUGetBuffer('PayloadType');
+
+        $this->SendDebug('Receive', $Frame, ($Frame->OpCode == WebSocketOPCode::continuation) ? $payloadType - 1 : $Frame->OpCode - 1);
+
+        switch ($Frame->OpCode) {
+            case WebSocketOPCode::ping:
+                $this->Send($Frame->Payload, WebSocketOPCode::pong);
+                return;
+            case WebSocketOPCode::close:
+                $this->Send('', WebSocketOPCode::close);
+                $this->MUSetBuffer('State', 3);
+                return;
+            case WebSocketOPCode::text:
+            case WebSocketOPCode::binary:
+                $this->MUSetBuffer('PayloadType', $Frame->OpCode);
+                $data = $Frame->Payload;
+                break;
+            case WebSocketOPCode::continuation:
+                $payloadData = $this->MUGetBuffer('PayloadData');
+                $data = $payloadData . $Frame->Payload;
+                break;
+            case WebSocketOPCode::pong:
+                $this->MUSetBuffer('PingPending', false);
+                return;
+            default:
+                return;
+        }
+
+        if ($Frame->Fin) {
+            // process data
+            $this->SendDebug('Received', $data, 0);
+            $data = '';
+        }
+
+        if(strlen($data) > 1024 * 1024) {
+            $this->Disconnect();
+            trigger_error("Maximum websocket payload size exceeded", E_USER_NOTICE);
+            return;
+        }
+
+        $this->MUSetBuffer('PayloadData', $data);
+    }
+
     public function RequestAction($ident, $value)
     {
+        if($ident === 'TimerCallback') {
+            if($this->MUGetBuffer('State') === 2) {
+                $isPingPending = $this->MUGetBuffer('PingPending');
+                if($isPingPending) {
+                    $this->Disconnect();
+                    trigger_error("Ping timeout", E_USER_NOTICE);
+                    return;
+                }
+
+                $this->Send($Text, WebSocketOPCode::ping);
+                $this->MUSetBuffer('PingPending', true);
+            }
+        }
+
         $this->SendDebug('Action', $ident, 0);
     }
 
@@ -186,6 +273,8 @@ class UnifiController extends IPSModule
     private function ResetState() {
         $this->MUSetBuffer('Data', '');
         $this->MUSetBuffer('State', 0);
+        $this->MUSetBuffer('PayloadType', 0);
+        $this->MUSetBuffer('PayloadData', '');
     }
 
     private function Connect() {
@@ -198,6 +287,9 @@ class UnifiController extends IPSModule
         $parentID = $this->GetConnectionID();
         if (!IPS_GetProperty($parentID, 'Open')) {
             return;
+        }
+        if($this->MUGetBuffer('State') === 2) {
+            $this->Send('', WebSocketOPCode::close);
         }
         IPS_SetProperty($parentID, 'Open', false);
         @IPS_ApplyChanges($parentID);
@@ -255,21 +347,6 @@ class UnifiController extends IPSModule
         $Header[] = 'Cookie: ' . $cookie;
         $Header[] = 'Upgrade: websocket';
         $Header[] = 'Connection: Upgrade';
-/*
-        $Origin = $this->ReadPropertyString('Origin');
-        if ($Origin != '') {
-            if ($this->ReadPropertyInteger('Version') >= 13) {
-                $Header[] = 'Origin: ' . $Origin;
-            } else {
-                $Header[] = 'Sec-WebSocket-Origin: ' . $Origin;
-            }
-        }
-        $Protocol = $this->ReadPropertyString('Protocol');
-        if ($Protocol != '') {
-            $Header[] = 'Sec-WebSocket-Protocol: ' . $Protocol;
-        }
-    */
-
         $Header[] = 'Sec-WebSocket-Key: ' . $SendKey;
         $Header[] = 'Sec-WebSocket-Version: 13';
         $Header[] = "\r\n";
@@ -283,44 +360,21 @@ class UnifiController extends IPSModule
         $JsonString = json_encode($JSON);
         parent::SendDataToParent($JsonString);
 
-        /*
-            // Antwort lesen
-            $Result = $this->WaitForResponse(WebSocketState::HandshakeReceived);
-            if ($Result === false) {
-                throw new Exception('no answer');
-            }
-
-            $this->SendDebug('Get Handshake', $Result, 0);
-
-            if (preg_match("/HTTP\/1.1 (\d{3}) /", $Result, $match)) {
-                if ((int) $match[1] != 101) {
-                    throw new Exception(HTTP_ERROR_CODES::ToString((int) $match[1]));
-                }
-            }
-
-            if (preg_match("/Connection: (.*)\r\n/", $Result, $match)) {
-                if (strtolower($match[1]) != 'upgrade') {
-                    throw new Exception('Handshake "Connection upgrade" error');
-                }
-            }
-
-            if (preg_match("/Upgrade: (.*)\r\n/", $Result, $match)) {
-                if (strtolower($match[1]) != 'websocket') {
-                    throw new Exception('Handshake "Upgrade websocket" error');
-                }
-            }
-
-            if (preg_match("/Sec-WebSocket-Accept: (.*)\r\n/", $Result, $match)) {
-                if ($match[1] != $Key) {
-                    throw new Exception('Sec-WebSocket not match');
-                }
-            }
-        } catch (Exception $exc) {
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
-            return false;
-        }
-        */
-
         return true;
+    }
+
+    /**
+     * Versendet RawData mit OpCode an den IO.
+     *
+     * @param string          $RawData
+     * @param WebSocketOPCode $OPCode
+     */
+    private function Send(string $RawData, int $OPCode, $Fin = true)
+    {
+        $WSFrame = new WebSocketFrame($OPCode, $RawData);
+        $WSFrame->Fin = $Fin;
+        $Frame = $WSFrame->ToFrame(true);
+        $this->SendDebug('Send', $WSFrame, 0);
+        $this->SendDataToParent($Frame);
     }
 }
