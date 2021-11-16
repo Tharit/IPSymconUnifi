@@ -57,13 +57,14 @@ class UnifiController extends IPSModule
             @IPS_ApplyChanges($parentID);
         }
 
+        parent::ApplyChanges();
+
         if($this->ReadPropertyString('username') && $this->ReadPropertyString('password')) {
             if (!IPS_GetProperty($parentID, 'Open')) {
                 IPS_SetProperty($parentID, 'Open', true);
+                @IPS_ApplyChanges($parentID);
             }
         }
-
-        parent::ApplyChanges();
     }
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
@@ -118,9 +119,8 @@ class UnifiController extends IPSModule
     }
 
     private function Connect() {
-        $this->Login();
-
-        CSCK_SendText($this->GetConnectionID(), '');
+        $cookie = $this->Login();
+        $this->InitHandshake($cookie);
     }
 
     private function Login() {
@@ -154,5 +154,88 @@ class UnifiController extends IPSModule
         $cookie = explode(';', $headers['Set-Cookie'])[0];
 
         $this->SendDebug('Cookie', $cookie, 0);
+    }
+
+    /**
+     *
+     */
+    private function InitHandshake($cookie)
+    {
+        $path = '/proxy/network/wss/s/default/events?clients=v2';
+
+        $SendKey = base64_encode(openssl_random_pseudo_bytes(16));
+        $Key = base64_encode(sha1($SendKey . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11', true));
+
+        $Header[] = 'GET ' . $path . ' HTTP/1.1';
+        $Header[] = 'Host: ' . $this->ReadStringProperty("ip");
+        $Header[] = 'Cookie: ' . $cookie;
+        $Header[] = 'Upgrade: websocket';
+        $Header[] = 'Connection: Upgrade';
+/*
+        $Origin = $this->ReadPropertyString('Origin');
+        if ($Origin != '') {
+            if ($this->ReadPropertyInteger('Version') >= 13) {
+                $Header[] = 'Origin: ' . $Origin;
+            } else {
+                $Header[] = 'Sec-WebSocket-Origin: ' . $Origin;
+            }
+        }
+        $Protocol = $this->ReadPropertyString('Protocol');
+        if ($Protocol != '') {
+            $Header[] = 'Sec-WebSocket-Protocol: ' . $Protocol;
+        }
+    */
+
+        $Header[] = 'Sec-WebSocket-Key: ' . $SendKey;
+        $Header[] = 'Sec-WebSocket-Version: 13';
+        $Header[] = "\r\n";
+        $SendData = implode("\r\n", $Header);
+        $this->SendDebug('Send Handshake', $SendData, 0);
+        $this->State = WebSocketState::HandshakeSend;
+
+        $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
+        $JSON['Buffer'] = utf8_encode($SendData);
+        $JsonString = json_encode($JSON);
+        parent::SendDataToParent($JsonString);
+
+        /*
+            // Antwort lesen
+            $Result = $this->WaitForResponse(WebSocketState::HandshakeReceived);
+            if ($Result === false) {
+                throw new Exception('no answer');
+            }
+
+            $this->SendDebug('Get Handshake', $Result, 0);
+
+            if (preg_match("/HTTP\/1.1 (\d{3}) /", $Result, $match)) {
+                if ((int) $match[1] != 101) {
+                    throw new Exception(HTTP_ERROR_CODES::ToString((int) $match[1]));
+                }
+            }
+
+            if (preg_match("/Connection: (.*)\r\n/", $Result, $match)) {
+                if (strtolower($match[1]) != 'upgrade') {
+                    throw new Exception('Handshake "Connection upgrade" error');
+                }
+            }
+
+            if (preg_match("/Upgrade: (.*)\r\n/", $Result, $match)) {
+                if (strtolower($match[1]) != 'websocket') {
+                    throw new Exception('Handshake "Upgrade websocket" error');
+                }
+            }
+
+            if (preg_match("/Sec-WebSocket-Accept: (.*)\r\n/", $Result, $match)) {
+                if ($match[1] != $Key) {
+                    throw new Exception('Sec-WebSocket not match');
+                }
+            }
+        } catch (Exception $exc) {
+            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            return false;
+        }
+        */
+
+        return true;
     }
 }
