@@ -48,6 +48,24 @@ class WebSocketMask
     const mask = 0x80;
 }
 
+function readLong(string $binary) : string {
+    $result = "0";
+    $result = bcadd($result, unpack("n", substr($binary, 0, 2)));
+    $result = bcmul($result, "65536");
+    $result = bcadd($result, unpack("n", substr($binary, 2, 2)));
+    $result = bcmul($result, "65536");
+    $result = bcadd($result, unpack("n", substr($binary, 4, 2)));
+    $result = bcmul($result, "65536");
+    $result = bcadd($result, unpack("n", substr($binary, 6, 2)));
+
+    // if $binary is a signed long long
+    // 9223372036854775808 is equal to (1 << 63) (note that this expression actually does not work even on 64-bit systems)
+    if(bccomp($result, "9223372036854775808") !== -1) { // if $result >= 9223372036854775807
+        $result = bcsub($result, "18446744073709551616"); // $result -= (1 << 64)
+    }
+    return $result;
+}
+
 /**
  * Ein Frame für eine Websocket Verbindung.
  */
@@ -109,7 +127,7 @@ class WebSocketFrame extends stdClass
             $len = unpack('n', substr($Frame, 2, 2))[1];
             $start = 4;
         } elseif ($len == 127) {
-            $len = unpack('J', substr($Frame, 2, 8))[1];
+            $len = intval(readLong(substr($Frame, 2, 8)));
             $start = 10;
         }
         if ($this->Mask) {
