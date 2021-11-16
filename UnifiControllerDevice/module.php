@@ -99,7 +99,63 @@ class UnifiController extends IPSModule
 
     public function ReceiveData($data)
     {
-        $this->SendDebug('Data', $data, 0);
+        $state = $this->MUGetBuffer('State');
+        $data = $this->MUGetBuffer('Data') . $data;
+
+        if($state === 0) {
+            $this->SendDebug('Error', 'Unexpected data received while connecting', 0);
+        } else if($state === 1) {
+            if (strpos($data, "\r\n\r\n") !== false) {
+                $this->SendDebug('Handshake response', $data, 0);
+
+                try {
+                    if (preg_match("/HTTP\/1.1 (\d{3}) /", $data, $match)) {
+                        if ((int) $match[1] != 101) {
+                            throw new Exception(HTTP_ERROR_CODES::ToString((int) $match[1]));
+                        }
+                    } else {
+                        throw new Exception("Incomplete handshake response received");
+                    }
+
+                    if (preg_match("/Connection: (.*)\r\n/", $data, $match)) {
+                        if (strtolower($match[1]) != 'upgrade') {
+                            throw new Exception('Handshake "Connection upgrade" error');
+                        }
+                    } else {
+                        throw new Exception("Incomplete handshake response received");
+                    }
+
+                    if (preg_match("/Upgrade: (.*)\r\n/", $data, $match)) {
+                        if (strtolower($match[1]) != 'websocket') {
+                            throw new Exception('Handshake "Upgrade websocket" error');
+                        }
+                    } else {
+                        throw new Exception("Incomplete handshake response received");
+                    }
+
+                    if (preg_match("/Sec-WebSocket-Accept: (.*)\r\n/", $Result, $match)) {
+                        if ($match[1] != $Key) {
+                            throw new Exception('Sec-WebSocket not match');
+                        }
+                    } else {
+                        throw new Exception("Incomplete handshake response received");
+                    }
+                }  catch (Exception $exc) {
+                    $this->Disconnect();
+                    trigger_error($exc->getMessage(), E_USER_NOTICE);
+                    return;
+                }
+
+                $this->MUSetBuffer('Data', '');
+                $this->MUSetBuffer('State', 2);
+                return;
+            }
+        } else if($state === 2) {
+            //$this->SendDebug('Data', $data, 0);
+            return;
+        }
+
+        $this->MUSetBuffer('Data', $data);
     }
 
     public function RequestAction($ident, $value)
@@ -119,8 +175,19 @@ class UnifiController extends IPSModule
     }
 
     private function Connect() {
+        $this->MUSetBuffer('State', 0);
         $cookie = $this->Login();
         $this->InitHandshake($cookie);
+    }
+
+    private function Disconnect() {
+        if (!IPS_GetProperty($parentID, 'Open')) {
+            return;
+        }
+        IPS_SetProperty($parentID, 'Open', false);
+        @IPS_ApplyChanges($parentID);
+        IPS_SetProperty($parentID, 'Open', true);
+        @IPS_ApplyChanges($parentID);
     }
 
     private function Login() {
@@ -193,6 +260,8 @@ class UnifiController extends IPSModule
         $Header[] = "\r\n";
         $SendData = implode("\r\n", $Header);
         $this->SendDebug('Send Handshake', $SendData, 0);
+
+        $this->MUSetBuffer('State', 1);
 
         $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
         $JSON['Buffer'] = utf8_encode($SendData);
