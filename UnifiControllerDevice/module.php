@@ -119,6 +119,8 @@ class UnifiController extends IPSModule
         $state = $this->MUGetBuffer('State');
         $data = $this->MUGetBuffer('Data') . $data;
 
+        $this->SendDebug('ReceiveData', 'state: ' . $state . ' | size: ' . strlen($data), 0);
+
         if($state === 0) {
             $this->SendDebug('Error', 'Unexpected data received while connecting', 0);
         } else if($state === 1) {
@@ -170,6 +172,7 @@ class UnifiController extends IPSModule
                 return;
             }
         } else if($state === 2) {
+            /*
             while (true) {
                 if (strlen($data) < 2) {
                     break;
@@ -182,6 +185,7 @@ class UnifiController extends IPSModule
                 $Frame->Tail = null;
                 $this->DecodeFrame($Frame);
             }
+            */
         }
 
         if(strlen($data) > 1024 * 1024) {
