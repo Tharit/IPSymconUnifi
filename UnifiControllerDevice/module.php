@@ -105,10 +105,11 @@ class UnifiController extends IPSModule
         if($state === 0) {
             $this->SendDebug('Error', 'Unexpected data received while connecting', 0);
         } else if($state === 1) {
-            if (strpos($data, "\r\n\r\n") !== false) {
-                $this->SendDebug('Handshake response', $data, 0);
+            try {
+                $this->SendDebug('Data', $data, 0);
+                if (strpos($data, "\r\n\r\n") !== false) {
+                    $this->SendDebug('Handshake response', $data, 0);
 
-                try {
                     if (preg_match("/HTTP\/1.1 (\d{3}) /", $data, $match)) {
                         if ((int) $match[1] != 101) {
                             throw new Exception(HTTP_ERROR_CODES::ToString((int) $match[1]));
@@ -140,20 +141,25 @@ class UnifiController extends IPSModule
                     } else {
                         throw new Exception("Incomplete handshake response received");
                     }
-                }  catch (Exception $exc) {
-                    $this->Disconnect();
-                    trigger_error($exc->getMessage(), E_USER_NOTICE);
+                    $this->MUSetBuffer('Data', '');
+                    $this->MUSetBuffer('State', 2);
                     return;
+                } else {
+                    throw new Exception("Incomplete handshake response received");
                 }
-
-                $this->MUSetBuffer('Data', '');
-                $this->MUSetBuffer('State', 2);
+            }  catch (Exception $exc) {
+                $this->Disconnect();
+                trigger_error($exc->getMessage(), E_USER_NOTICE);
                 return;
-            } else {
-                $this->SendDebug('Partial handshake response', $data, 0);
             }
         } else if($state === 2) {
             //$this->SendDebug('Data', $data, 0);
+            return;
+        }
+
+        if(strlen($data) > 1024 * 1024) {
+            $this->Disconnect();
+            trigger_error("Maximum websocket frame size exceeded", E_USER_NOTICE);
             return;
         }
 
