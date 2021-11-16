@@ -149,6 +149,8 @@ class UnifiController extends IPSModule
                 $this->MUSetBuffer('Data', '');
                 $this->MUSetBuffer('State', 2);
                 return;
+            } else {
+                $this->SendDebug('Partial handshake response', $data, 0);
             }
         } else if($state === 2) {
             //$this->SendDebug('Data', $data, 0);
@@ -172,6 +174,8 @@ class UnifiController extends IPSModule
     // module internals
     //------------------------------------------------------------------------------------
     private function ResetState() {
+        $this->MUSetBuffer('Data', '');
+        $this->MUSetBuffer('State', 0);
     }
 
     private function Connect() {
