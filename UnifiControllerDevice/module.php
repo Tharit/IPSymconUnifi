@@ -202,8 +202,6 @@ class UnifiController extends IPSModule
     {
         $payloadType = $this->MUGetBuffer('PayloadType');
 
-        $this->SendDebug('Receive', $Frame, ($Frame->OpCode == WebSocketOPCode::continuation) ? $payloadType - 1 : $Frame->OpCode - 1);
-
         switch ($Frame->OpCode) {
             case WebSocketOPCode::ping:
                 $this->Send($Frame->Payload, WebSocketOPCode::pong);

@@ -50,13 +50,13 @@ class WebSocketMask
 
 function readLong(string $binary) : string {
     $result = "0";
-    $result = bcadd($result, unpack("n", substr($binary, 0, 2)));
+    $result = bcadd($result, unpack("n", substr($binary, 0, 2))[1]);
     $result = bcmul($result, "65536");
-    $result = bcadd($result, unpack("n", substr($binary, 2, 2)));
+    $result = bcadd($result, unpack("n", substr($binary, 2, 2))[1]);
     $result = bcmul($result, "65536");
-    $result = bcadd($result, unpack("n", substr($binary, 4, 2)));
+    $result = bcadd($result, unpack("n", substr($binary, 4, 2))[1]);
     $result = bcmul($result, "65536");
-    $result = bcadd($result, unpack("n", substr($binary, 6, 2)));
+    $result = bcadd($result, unpack("n", substr($binary, 6, 2))[1]);
 
     // if $binary is a signed long long
     // 9223372036854775808 is equal to (1 << 63) (note that this expression actually does not work even on 64-bit systems)
