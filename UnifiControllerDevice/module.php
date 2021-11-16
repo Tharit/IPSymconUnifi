@@ -117,8 +117,6 @@ class UnifiController extends IPSModule
         $state = $this->MUGetBuffer('State');
         $data = $this->MUGetBuffer('Data') . $data;
 
-        $this->SendDebug('ReceiveData', 'state: ' . $state . ' | size: ' . strlen($data), 0);
-
         if($state === 0) {
             $this->SendDebug('Error', 'Unexpected data received while connecting', 0);
         } else if($state === 1) {
@@ -160,8 +158,6 @@ class UnifiController extends IPSModule
                     $this->MUSetBuffer('Data', '');
                     $this->MUSetBuffer('State', 2);
 
-                    $this->SendDebug('State', '2', 0);
-
                     return;
                 } else {
                     $this->SendDebug('Incomplete handshake response', $data, 0);
@@ -187,8 +183,6 @@ class UnifiController extends IPSModule
                 $this->DecodeFrame($Frame);
             }
         }
-
-        $this->SendDebug('State', '2', 0);
 
         if(strlen($data) > 1024 * 1024) {
             $this->Disconnect();
@@ -236,7 +230,7 @@ class UnifiController extends IPSModule
 
         if ($Frame->Fin) {
             // process data
-            $this->SendDebug('Received', $data, 0);
+            $this->SendDebug('Received Data', $data, 0);
             $data = '';
         }
 

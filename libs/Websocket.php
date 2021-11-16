@@ -53,6 +53,8 @@ class WebSocketMask
  */
 class WebSocketFrame extends stdClass
 {
+    const Fin = 0x80;
+
     public $Fin = false;
     public $OpCode = WebSocketOPCode::continuation;
     public $Mask = false;
@@ -97,7 +99,7 @@ class WebSocketFrame extends stdClass
             return;
         }
 
-        $this->Fin = ((ord($Frame[0]) & WebSocketState::Fin) == WebSocketState::Fin) ? true : false;
+        $this->Fin = ((ord($Frame[0]) & WebSocketFrame::Fin) == WebSocketFrame::Fin) ? true : false;
         $this->OpCode = (ord($Frame[0]) & 0x0F);
         $this->Mask = ((ord($Frame[1]) & WebSocketMask::mask) == WebSocketMask::mask) ? true : false;
 
