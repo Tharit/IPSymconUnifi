@@ -150,7 +150,7 @@ class UnifiController extends IPSModule
                         throw new Exception("Incomplete handshake response received");
                     }
 
-                    if (preg_match("/Sec-WebSocket-Accept: (.*)\r\n/", $Result, $match)) {
+                    if (preg_match("/Sec-WebSocket-Accept: (.*)\r\n/", $data, $match)) {
                         if ($match[1] != $this->MUGetBuffer('HandshakeKey')) {
                             throw new Exception('Sec-WebSocket not match');
                         }
@@ -299,6 +299,7 @@ class UnifiController extends IPSModule
         }
         IPS_SetProperty($parentID, 'Open', false);
         @IPS_ApplyChanges($parentID);
+
         IPS_SetProperty($parentID, 'Open', true);
         @IPS_ApplyChanges($parentID);
     }
