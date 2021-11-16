@@ -186,8 +186,6 @@ class UnifiControllerDiscovery extends IPSModule
 
                 $config_list[] = [
                     'instanceID' => $instanceID,
-                    'uuid'       => $device['uuid'],
-                    'name'       => $device['name'],
                     'ip'         => $device['ip'],
                     'type'       => $device['type'],
                     'create'     => [
