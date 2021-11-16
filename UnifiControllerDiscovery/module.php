@@ -192,7 +192,6 @@ class UnifiControllerDiscovery extends IPSModule
                         [
                             'moduleID'      => '{6064EC15-6A7C-42C1-81D3-B299178C0C27}',
                             'configuration' => [
-                                'uuid'       => $device['uuid'],
                                 'ip'         => $device['ip']
                             ], 
                         ],
