@@ -1,0 +1,15 @@
+{
+	"id": "{6064EC15-6A7C-42C1-81D3-B299178C0C27}",
+	"name": "UnifiController",
+	"type": 3,
+	"vendor": "Ubiquiti",
+	"aliases": 
+	[
+		"Unifi Controller"
+	],
+	"parentRequirements": ["{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}"],
+	"childRequirements": [],
+	"implemented": ["{018EF6B5-AB94-40C6-AA53-46943E824ACF}"],
+	"prefix": "UnifiController",
+    "url": "https://github.com/tharit/IPSymconUnifi"
+}

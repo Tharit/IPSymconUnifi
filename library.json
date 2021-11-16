@@ -1,0 +1,12 @@
+{
+    "id": "{426835F5-99F1-4640-966C-2E088957C5B7}",
+    "name": "UnifiController",
+    "author": "Martin Kleinhans",
+    "url": "https://github.com/tharit/IPSSymconUnifi",
+    "compatibility": {
+        "version": "5.5"
+    },
+    "version": "1.0",
+    "build": 1,
+    "date": 1
+}

@@ -1,0 +1,15 @@
+{
+	"id": "{E29666EE-291B-4169-9AA8-A3A62857B91A}",
+	"name": "UnifiControllerDiscovery",
+	"type": 5,
+	"vendor": "Ubiquiti",
+	"aliases": 
+	[
+		"Unifi Controller Discovery"
+	],
+	"parentRequirements": [],
+	"childRequirements": [],
+	"implemented": [],
+	"prefix": "UnifiControllerDiscovery",
+    "url": "https://github.com/tharit/IPSymconUnifi"
+}
