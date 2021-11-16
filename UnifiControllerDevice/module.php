@@ -57,8 +57,10 @@ class UnifiController extends IPSModule
             @IPS_ApplyChanges($parentID);
         }
 
-        if (!IPS_GetProperty($parentID, 'Open')) {
-            IPS_SetProperty($parentID, 'Open', true);
+        if($this->ReadPropertyString('username') && $this->ReadPropertyString('password')) {
+            if (!IPS_GetProperty($parentID, 'Open')) {
+                IPS_SetProperty($parentID, 'Open', true);
+            }
         }
 
         parent::ApplyChanges();
