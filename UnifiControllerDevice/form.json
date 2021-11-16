@@ -2,12 +2,12 @@
     "elements":
         [
             {
-                "name": "Username",
+                "name": "username",
                 "type": "ValidationTextBox",
                 "caption": "Username"
             },
             {
-                "name": "Password",
+                "name": "password",
                 "type": "PasswordTextBox",
                 "caption": "Password"
             }
