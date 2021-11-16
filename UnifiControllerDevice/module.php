@@ -154,6 +154,8 @@ class UnifiController extends IPSModule
         $cookie = explode(';', $headers['Set-Cookie'])[0];
 
         $this->SendDebug('Cookie', $cookie, 0);
+
+        return $cookie;
     }
 
     /**
@@ -191,7 +193,6 @@ class UnifiController extends IPSModule
         $Header[] = "\r\n";
         $SendData = implode("\r\n", $Header);
         $this->SendDebug('Send Handshake', $SendData, 0);
-        $this->State = WebSocketState::HandshakeSend;
 
         $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
         $JSON['Buffer'] = utf8_encode($SendData);
