@@ -151,7 +151,7 @@ class UnifiController extends IPSModule
                     }
 
                     if (preg_match("/Sec-WebSocket-Accept: (.*)\r\n/", $Result, $match)) {
-                        if ($match[1] != $Key) {
+                        if ($match[1] != $this->MUGetBuffer('HandshakeKey')) {
                             throw new Exception('Sec-WebSocket not match');
                         }
                     } else {
@@ -174,7 +174,6 @@ class UnifiController extends IPSModule
                 return;
             }
         } else if($state === 2) {
-            /*
             while (true) {
                 if (strlen($data) < 2) {
                     break;
@@ -187,7 +186,6 @@ class UnifiController extends IPSModule
                 $Frame->Tail = null;
                 $this->DecodeFrame($Frame);
             }
-            */
         }
 
         $this->SendDebug('State', '2', 0);
@@ -349,6 +347,7 @@ class UnifiController extends IPSModule
 
         $SendKey = base64_encode(openssl_random_pseudo_bytes(16));
         $Key = base64_encode(sha1($SendKey . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11', true));
+        $this->MUSetBuffer('HandshakeKey', $Key);
 
         $Header[] = 'GET ' . $path . ' HTTP/1.1';
         $Header[] = 'Host: ' . $this->ReadPropertyString("ip");
