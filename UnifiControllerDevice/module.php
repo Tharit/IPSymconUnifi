@@ -191,6 +191,7 @@ class UnifiController extends IPSModule
     }
 
     private function Disconnect() {
+        $parentID = $this->GetConnectionID();
         if (!IPS_GetProperty($parentID, 'Open')) {
             return;
         }
