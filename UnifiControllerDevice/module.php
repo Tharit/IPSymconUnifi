@@ -99,6 +99,10 @@ class UnifiController extends IPSModule
 
     public function ReceiveData($data)
     {
+        // unpack & decode data
+        $data = json_decode($data);
+        $data = utf8_decode($data->Buffer);
+
         $state = $this->MUGetBuffer('State');
         $data = $this->MUGetBuffer('Data') . $data;
 
