@@ -228,6 +228,6 @@ class UnifiControllerDiscovery extends IPSModule
 
         $this->SendDebug('Discover Response:', json_encode($controllers), 0);
 
-        return $chromecasts;
+        return $controllers;
     }
 }
