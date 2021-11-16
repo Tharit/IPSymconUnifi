@@ -14,6 +14,7 @@ class UnifiController extends IPSModule
         $this->RequireParent('{3CFF0FD9-E306-41DB-9B5A-9D06D38576C3}'); // IO Client Socket
 
         // properties
+        $this->RegisterPropertyString('uuid', '');
         $this->RegisterPropertyString('ip', '');
         $this->RegisterPropertyString('username', '');
         $this->RegisterPropertyString('password', '');
