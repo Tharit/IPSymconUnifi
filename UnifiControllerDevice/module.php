@@ -167,7 +167,7 @@ class UnifiController extends IPSModule
         $Key = base64_encode(sha1($SendKey . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11', true));
 
         $Header[] = 'GET ' . $path . ' HTTP/1.1';
-        $Header[] = 'Host: ' . $this->ReadStringProperty("ip");
+        $Header[] = 'Host: ' . $this->ReadPropertyString("ip");
         $Header[] = 'Cookie: ' . $cookie;
         $Header[] = 'Upgrade: websocket';
         $Header[] = 'Connection: Upgrade';
