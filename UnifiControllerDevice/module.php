@@ -82,7 +82,7 @@ class UnifiController extends IPSModule
                 // reset state
                 $this->ResetState();
 
-                $this->SendDebug('CHANGESTATUS', json_encode($Data, 0);
+                $this->SendDebug('CHANGESTATUS', json_encode($Data), 0);
 
                 // if parent became active: connect
                 if ($Data[0] === IS_ACTIVE) {
