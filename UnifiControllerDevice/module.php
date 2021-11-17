@@ -89,10 +89,12 @@ class UnifiController extends IPSModule
                 $this->SendDebug('STARTED / CONNECT', 'resetting connection');
                 // if new parent and it is already active: connect immediately
                 if($this->UpdateConnection() && $this->HasActiveParent()) {
-                    $this->ApplyChanges();
+                    $this->ResetState();
+                    $this->Connect();
                 }
                 break;
             case FM_DISCONNECT:
+                $this->ResetState();
                 $this->UpdateConnection();
                 break;
             case IM_CHANGESTATUS:
@@ -389,10 +391,9 @@ class UnifiController extends IPSModule
     {
         $WSFrame = new WebSocketFrame($OPCode, $RawData);
         $WSFrame->Fin = $Fin;
-        $Frame = $WSFrame->ToFrame(true);
 
         $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
-        $JSON['Buffer'] = $WSFrame->ToFrame(true);
+        $JSON['Buffer'] = utf8_encode($WSFrame->ToFrame(true));
         $JsonString = json_encode($JSON);
         parent::SendDataToParent($JsonString);
     }
