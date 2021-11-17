@@ -59,7 +59,7 @@ class UnifiControllerDiscovery extends IPSModule
 
     public function Discover()
     {
-        $this->LogMessage($this->Translate('Background Discovery of Chromecast devices'), KL_NOTIFY);
+        $this->LogMessage($this->Translate('Background Discovery of Unifi devices'), KL_NOTIFY);
 
         $devices = json_encode($this->DiscoverDevices());
         $this->WriteAttributeString('devices', $devices);

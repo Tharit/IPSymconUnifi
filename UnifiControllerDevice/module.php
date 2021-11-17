@@ -387,6 +387,10 @@ class UnifiController extends IPSModule
         $WSFrame = new WebSocketFrame($OPCode, $RawData);
         $WSFrame->Fin = $Fin;
         $Frame = $WSFrame->ToFrame(true);
-        $this->SendDataToParent($Frame);
+
+        $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
+        $JSON['Buffer'] = $WSFrame->ToFrame(true);
+        $JsonString = json_encode($JSON);
+        parent::SendDataToParent($JsonString);
     }
 }
