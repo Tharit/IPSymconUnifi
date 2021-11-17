@@ -43,6 +43,7 @@ class UnifiController extends IPSModule
 
         // if this is not the initial creation there might already be a parent
         if($this->UpdateConnection() && $this->HasActiveParent()) {
+            if($this->MUGetBuffer('State'))
             $this->Connect();
         }
     }
@@ -85,10 +86,12 @@ class UnifiController extends IPSModule
                 break;
             case IPS_KERNELSTARTED:
             case FM_CONNECT:
+                $this->SendDebug('STARTED / CONNECT', 'resetting connection');
                 // if new parent and it is already active: connect immediately
                 if($this->UpdateConnection() && $this->HasActiveParent()) {
-                    $this->Connect();
+                    $this->ApplyChanges();
                 }
+                break;
             case FM_DISCONNECT:
                 $this->UpdateConnection();
                 break;
