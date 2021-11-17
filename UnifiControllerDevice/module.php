@@ -162,7 +162,7 @@ class UnifiController extends IPSModule
                     $this->MUSetBuffer('Data', '');
                     $this->MUSetBuffer('State', 2);
 
-                    $this->SetReceiveDataFilter('Ping|.*'.preg_quote('\"message\":\"events\"').'.*');
+                    $this->SetReceiveDataFilter('.*Ping.*|.*'.preg_quote('\"message\":\"events\"').'.*');
 
                     return;
                 } else {
