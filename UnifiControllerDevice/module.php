@@ -254,7 +254,7 @@ class UnifiController extends IPSModule
                     return;
                 }
 
-                $this->Send($Text, WebSocketOPCode::ping);
+                $this->Send('Ping', WebSocketOPCode::ping);
                 $this->MUSetBuffer('PingPending', true);
             }
         }
@@ -281,6 +281,10 @@ class UnifiController extends IPSModule
     private function Connect() {
         $this->MUSetBuffer('State', 0);
         $cookie = $this->Login();
+        if($cookie === false) {
+            $this->Disconnect();
+            return;
+        }
         $this->InitHandshake($cookie);
     }
 
@@ -295,8 +299,10 @@ class UnifiController extends IPSModule
         IPS_SetProperty($parentID, 'Open', false);
         @IPS_ApplyChanges($parentID);
 
-        IPS_SetProperty($parentID, 'Open', true);
-        @IPS_ApplyChanges($parentID);
+        if($this->ReadPropertyString('username') && $this->ReadPropertyString('password')) {
+            IPS_SetProperty($parentID, 'Open', true);
+            @IPS_ApplyChanges($parentID);
+        }
     }
 
     private function Login() {
@@ -327,6 +333,10 @@ class UnifiController extends IPSModule
         curl_exec($ch);
         curl_close($ch);
 
+        if(!isset($headers['Set-Cookie'])) {
+            $this->SendDebug('Cookie', 'Login failed', 0);
+            return false;
+        }
         $cookie = explode(';', $headers['Set-Cookie'])[0];
 
         $this->SendDebug('Cookie', $cookie, 0);
