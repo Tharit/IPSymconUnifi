@@ -158,6 +158,8 @@ class UnifiController extends IPSModule
                     $this->MUSetBuffer('Data', '');
                     $this->MUSetBuffer('State', 2);
 
+                    $this->SetReceiveDataFilter('.*'.preg_quote('\"message\":\"device:update\"').'.*');
+
                     return;
                 } else {
                     $this->SendDebug('Incomplete handshake response', $data, 0);
@@ -269,6 +271,7 @@ class UnifiController extends IPSModule
     // module internals
     //------------------------------------------------------------------------------------
     private function ResetState() {
+        $this->SetReceiveDataFilter('');
         $this->MUSetBuffer('Data', '');
         $this->MUSetBuffer('State', 0);
         $this->MUSetBuffer('PayloadType', 0);
