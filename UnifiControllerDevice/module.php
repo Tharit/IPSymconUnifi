@@ -387,7 +387,6 @@ class UnifiController extends IPSModule
         $WSFrame = new WebSocketFrame($OPCode, $RawData);
         $WSFrame->Fin = $Fin;
         $Frame = $WSFrame->ToFrame(true);
-        $this->SendDebug('Send', $WSFrame, 0);
         $this->SendDataToParent($Frame);
     }
 }
