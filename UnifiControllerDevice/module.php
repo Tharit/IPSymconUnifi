@@ -89,8 +89,7 @@ class UnifiController extends IPSModule
                 $this->SendDebug('STARTED / CONNECT', 'resetting connection');
                 // if new parent and it is already active: connect immediately
                 if($this->UpdateConnection() && $this->HasActiveParent()) {
-                    $this->ResetState();
-                    $this->Connect();
+                    $this->ApplyChanges();
                 }
                 break;
             case FM_DISCONNECT:
@@ -281,6 +280,7 @@ class UnifiController extends IPSModule
         $this->MUSetBuffer('State', 0);
         $this->MUSetBuffer('PayloadType', 0);
         $this->MUSetBuffer('PayloadData', '');
+        $this->MUSetBuffer('PingPending', false);
     }
 
     private function Connect() {
