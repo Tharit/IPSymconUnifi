@@ -158,7 +158,7 @@ class UnifiController extends IPSModule
                     $this->MUSetBuffer('Data', '');
                     $this->MUSetBuffer('State', 2);
 
-                    $this->SetReceiveDataFilter('.*'.preg_quote('\"message\":\"device:update\"').'.*');
+                    $this->SetReceiveDataFilter('.*'.preg_quote('\"message\":\"events\"').'.*');
 
                     return;
                 } else {
