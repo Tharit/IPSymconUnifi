@@ -167,7 +167,7 @@ class UnifiProtect extends IPSModule
         if($deflated) {
             $payload = gzinflate($payload);
         }
-        $this->SendDebug('Action', $payload);
+        $this->SendDebug('Action', $payload, 0);
 
         // header
         $offset += $payloadSize;
@@ -182,7 +182,7 @@ class UnifiProtect extends IPSModule
         if($deflated) {
             $payload = gzinflate($payload);
         }
-        $this->SendDebug('Data', $payload);
+        $this->SendDebug('Data', $payload), 0;
 
         /*
         $script = $this->ReadPropertyInteger('script');
