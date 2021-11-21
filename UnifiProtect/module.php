@@ -184,6 +184,20 @@ class UnifiProtect extends IPSModule
         $this->SendDebug('action', $action['data'], 0);
         $this->SendDebug('data', $data['data'], 0);
 
+        if($action['format'] === 1 && $data['format'] === 1) {
+            $action = json_decode($action['data']);
+            $data = json_decode($data['data']);
+
+            if($action['action'] === 'add' && $action['modelKey'] === 'event') {
+
+                // ring events
+                if($data['type'] === 'ring') {
+                    $this->SendDebug('Ring', $data['camera'], 0);
+                }
+
+            }
+        }
+
         /*
         $script = $this->ReadPropertyInteger('script');
         if($script && @IPS_GetScript($script)) {
