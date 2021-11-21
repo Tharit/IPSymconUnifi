@@ -330,8 +330,6 @@ trait CustomWebSocketClient {
                     $this->MUSetBuffer('Data', '');
                     $this->MUSetBuffer('State', 2);
 
-                    $this->StateChanged(2);
-
                     $filter = $this->MUGetBuffer('WSCReceiveDataFilter');
                     if($filter) {
                         $filter = '.*Ping.*|'.$filter;
