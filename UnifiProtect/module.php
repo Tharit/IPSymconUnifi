@@ -182,7 +182,7 @@ class UnifiProtect extends IPSModule
         if($deflated) {
             $payload = gzinflate($payload);
         }
-        $this->SendDebug('Data', $payload), 0;
+        $this->SendDebug('Data', $payload, 0);
 
         /*
         $script = $this->ReadPropertyInteger('script');
