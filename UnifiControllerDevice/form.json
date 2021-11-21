@@ -10,6 +10,11 @@
                 "name": "password",
                 "type": "PasswordTextBox",
                 "caption": "Password"
+            },
+            {
+                "name": "script",
+                "type": "Script",
+                "caption": "Event handler script"
             }
         ]
 }

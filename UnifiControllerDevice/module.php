@@ -1,5 +1,11 @@
 <?php
 
+/**
+API to fetch events
+
+https://192.168.1.1/proxy/network/api/s/default/stat/event?start=1637485298&end=1637488857&_limit=100
+
+ */
 require_once(__DIR__ . '/../libs/ModuleUtilities.php');
 require_once(__DIR__ . '/../libs/Websocket.php');
 
@@ -19,6 +25,7 @@ class UnifiController extends IPSModule
         $this->RegisterPropertyString('ip', '');
         $this->RegisterPropertyString('username', '');
         $this->RegisterPropertyString('password', '');
+        $this->RegisterPropertyInteger('script', '0');
 
         // timers
         $this->RegisterTimer("PingTimer", 45000, 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "PingTimer");');
@@ -235,6 +242,10 @@ class UnifiController extends IPSModule
         if ($Frame->Fin) {
             // process data
             $this->SendDebug('Received Data', $data, 0);
+            $script = $this->ReadPropertyInteger('script');
+            if($script && @IPS_GetScript($script)) {
+                IPS_RunScriptEx($script, ["Data" => $data]);
+            }
             $data = '';
         }
 
