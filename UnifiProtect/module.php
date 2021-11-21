@@ -1,6 +1,42 @@
 <?php
 
 /**
+    API description: https://github.com/hjdhjd/homebridge-unifi-protect/blob/master/docs/ProtectAPI.md
+
+    - Login to the UniFi Protect controller and obtain the bootstrap JSON. The URL is: https://protect-nvr-ip/proxy/protect/api/bootstrap
+    - Open the websocket to the updates URL. The URL is: wss://protect-nvr-ip/proxy/protect/ws/updates?lastUpdateId?lastUpdateId=X
+
+    Header Frame (8 bytes)
+    ----------------------
+    Action Frame
+    ----------------------
+    Header Frame (8 bytes)
+    ----------------------
+    Data Frame
+
+    Header:
+
+    Byte Offset	Description	    Bits	Values
+    0	        Packet Type	    8	    1 - action frame, 2 - payload frame.
+    1	        Payload Format	8	    1 - JSON object, 2 - UTF8-encoded string, 3 - Node Buffer.
+    2	        Deflated	    8	    0 - uncompressed, 1 - deflated / compressed (zlib-based).
+    3	        Unknown	        8	    Always 0. Possibly reserved for future use by Ubiquiti?
+    4-7	        Payload Size	32	    Size of payload in network-byte order (big endian).
+
+    Action Frame
+
+    Property	Description
+    action	    What action is being taken. Known actions are add and update.
+    id	        The identifier for the device we're updating.
+    modelKey	The device model category that we're updating.
+    newUpdateId	A new UUID generated on a per-update basis. This can be safely ignored it seems.
+
+    Data Frame
+    
+    Payload Type	Description
+    1	            JSON. If the action frame's action property is set to update and the modelKey property is not set to event (e.g. camera), this will always a subset of the configuration bootstrap JSON.
+    2	            A UTF8-encoded string.
+    3	            Node Buffer.
 
  */
 require_once(__DIR__ . '/../libs/ModuleUtilities.php');
@@ -118,6 +154,37 @@ class UnifiProtect extends IPSModule
     }
  
     protected function WSCOnReceiveData($opCode, $data) {
+        // header
+        $offset = 0;
+        $packetType = unpack('c', $data, $offset + 0);
+        $payloadFormat = unpack('c', $data, $offset + 1);
+        $deflated = unpack('c', $data, $offset + 2);
+        $payloadSize = unpck('N', $data, $offset + 4);
+
+        // action frame
+        $offset += 8;
+        $payload = substr($data, $offset, $payloadSize);
+        if($deflated) {
+            $payload = gzinflate($payload);
+        }
+        $this->SendDebug('Action', $payload);
+
+        // header
+        $offset += $payloadSize;
+        $packetType = unpack('c', $data, $offset + 0);
+        $payloadFormat = unpack('c', $data, $offset + 1);
+        $deflated = unpack('c', $data, $offset + 2);
+        $payloadSize = unpck('N', $data, $offset + 4);
+
+        // data frame
+        $offset += 8;
+        $payload = substr($data, $offset, $payloadSize);
+        if($deflated) {
+            $payload = gzinflate($payload);
+        }
+        $this->SendDebug('Data', $payload);
+
+        /*
         $script = $this->ReadPropertyInteger('script');
         if($script && @IPS_GetScript($script)) {
             $data = @json_decode($data, true);
@@ -125,6 +192,7 @@ class UnifiProtect extends IPSModule
                 IPS_RunScriptEx($script, ["Data" => json_encode($data['data'])]);
             }
         }
+        */
     }
 
     public function RequestAction($ident, $value)
