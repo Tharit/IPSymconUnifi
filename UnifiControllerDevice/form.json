@@ -13,7 +13,7 @@
             },
             {
                 "name": "script",
-                "type": "Script",
+                "type": "SelectScript",
                 "caption": "Event handler script"
             }
         ]
