@@ -25,7 +25,6 @@ class UnifiController extends IPSModule
 
         // properties
         $this->RegisterPropertyString('uuid', '');
-        $this->RegisterPropertyString('ip', '');
         $this->RegisterPropertyString('username', '');
         $this->RegisterPropertyString('password', '');
         $this->RegisterPropertyInteger('script', '0');
@@ -161,7 +160,8 @@ class UnifiController extends IPSModule
             IPS_LogMessage('WSC', 'Tried to connect while already connected');
             return;
         }
-        $ip = $this->ReadPropertyString("ip");
+        $parentID = $this->GetConnectionID();
+        $ip = IPS_GetProperty($parentID, 'Host');
         $username = $this->ReadPropertyString("username");
         $password = $this->ReadPropertyString("password");
         $cookie = $this->Login($ip, $username, $password);
