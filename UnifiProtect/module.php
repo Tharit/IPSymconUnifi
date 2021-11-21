@@ -159,15 +159,15 @@ class UnifiProtect extends IPSModule
         $password = $this->ReadPropertyString("password");
         $cookie = $this->Login($ip, $username, $password);
         if($cookie === false) {
-            $this->SendDebug('Login', 'Failed to get cookie');
+            $this->SendDebug('Login', 'Failed to get cookie', 0);
             $this->WSCDisconnect();
             return;
         }
 
         $bootstrap = $this->Request($ip, '/proxy/protect/api/bootstrap', $cookie);
-        $this->SendDebug('Bootstrap', json_encode($bootstrap));
+        $this->SendDebug('Bootstrap', json_encode($bootstrap), 0);
         if(!$bootstrap || !isset($bootstrap['lastUpdateId'])) {
-            $this->SendDebug('Login', 'Failed to load bootstrap data');
+            $this->SendDebug('Login', 'Failed to load bootstrap data', 0);
             $this->WSCDisconnect(false);
         }
 
