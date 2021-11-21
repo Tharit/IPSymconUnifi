@@ -251,7 +251,7 @@ trait CustomWebSocketClient {
         $Header[] = 'Sec-WebSocket-Version: 13';
         $Header[] = "\r\n";
         $SendData = implode("\r\n", $Header);
-        $this->SendDebug('Send Handshake', $SendData, 0);
+        //$this->SendDebug('Send Handshake', $SendData, 0);
 
         $this->MUSetBuffer('State', 1);
 
@@ -298,7 +298,7 @@ trait CustomWebSocketClient {
         } else if($state === 1) {
             try {
                 if (strpos($data, "\r\n\r\n") !== false) {
-                    $this->SendDebug('Handshake response', $data, 0);
+                    //$this->SendDebug('Handshake response', $data, 0);
 
                     if (preg_match("/HTTP\/1.1 (\d{3}) /", $data, $match)) {
                         if ((int) $match[1] != 101) {
@@ -409,7 +409,7 @@ trait CustomWebSocketClient {
 
         if ($Frame->Fin) {
             // process data
-            $this->SendDebug('Received Data', $data, 0);
+            //$this->SendDebug('Received Data', $data, 0);
             try {
                 $this->WSCOnReceiveData($Frame->OpCode, $data);
             } catch(Exception $e) {

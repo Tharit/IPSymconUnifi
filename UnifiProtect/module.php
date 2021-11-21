@@ -153,9 +153,9 @@ class UnifiProtect extends IPSModule
         return $this->ReadPropertyString('username') && $this->ReadPropertyString('password');
     }
  
-    protected function WSCOnReceiveData($opCode, $data) {
+
+    protected function ParseFrame($data, &$offset) {
         // header
-        $offset = 0;
         $packetType = unpack('c', $data, $offset + 0)[1];
         $payloadFormat = unpack('c', $data, $offset + 1)[1];
         $deflated = unpack('c', $data, $offset + 2)[1];
@@ -167,22 +167,22 @@ class UnifiProtect extends IPSModule
         if($deflated) {
             $payload = zlib_decode($payload);
         }
-        $this->SendDebug('Action', $payload, 0);
-
-        // header
         $offset += $payloadSize;
-        $packetType = unpack('c', $data, $offset + 0)[1];
-        $payloadFormat = unpack('c', $data, $offset + 1)[1];
-        $deflated = unpack('c', $data, $offset + 2)[1];
-        $payloadSize = unpack('N', $data, $offset + 4)[1];
 
-        // data frame
-        $offset += 8;
-        $payload = substr($data, $offset, $payloadSize);
-        if($deflated) {
-            $payload = zlib_decode($payload);
-        }
-        $this->SendDebug('Data', $payload, 0);
+        return [
+            "format" => $payloadFormat,
+            "data" => $payload
+        ];
+    }
+
+    protected function WSCOnReceiveData($opCode, $data) {
+        // header
+        $offset = 0;
+        $action = $this->ParseFrame($data, $offset);
+        $data = $this->ParseFrame($data, $offset);
+
+        $this->SendDebug('action', $action->data, 0);
+        $this->SendDebug('data', $data->data, 0);
 
         /*
         $script = $this->ReadPropertyInteger('script');
