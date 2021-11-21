@@ -263,7 +263,7 @@ trait CustomWebSocketClient {
         return $this->MUGetBuffer('State');
     } 
 
-    protected function WSCDisconnect($canReconnt = true) {
+    protected function WSCDisconnect($canReconnect = true) {
         $parentID = $this->GetConnectionID();
         if (!IPS_GetProperty($parentID, 'Open')) {
             return;
