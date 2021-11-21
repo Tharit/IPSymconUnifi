@@ -181,8 +181,8 @@ class UnifiProtect extends IPSModule
         $action = $this->ParseFrame($data, $offset);
         $data = $this->ParseFrame($data, $offset);
 
-        $this->SendDebug('action', $action->data, 0);
-        $this->SendDebug('data', $data->data, 0);
+        $this->SendDebug('action', $action['data'], 0);
+        $this->SendDebug('data', $data['data'], 0);
 
         /*
         $script = $this->ReadPropertyInteger('script');
