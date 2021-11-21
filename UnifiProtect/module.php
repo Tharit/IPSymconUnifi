@@ -165,7 +165,7 @@ class UnifiProtect extends IPSModule
         $offset += 8;
         $payload = substr($data, $offset, $payloadSize);
         if($deflated) {
-            $payload = gzinflate($payload);
+            $payload = zlib_decode($payload);
         }
         $this->SendDebug('Action', $payload, 0);
 
@@ -180,7 +180,7 @@ class UnifiProtect extends IPSModule
         $offset += 8;
         $payload = substr($data, $offset, $payloadSize);
         if($deflated) {
-            $payload = gzinflate($payload);
+            $payload = zlib_decode($payload);
         }
         $this->SendDebug('Data', $payload, 0);
 
