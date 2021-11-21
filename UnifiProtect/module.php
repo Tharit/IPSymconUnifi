@@ -7,7 +7,7 @@ require_once(__DIR__ . '/../libs/ModuleUtilities.php');
 require_once(__DIR__ . '/../libs/Websocket.php');
 require_once(__DIR__ . '/../libs/UnifiAPI.php');
 
-class UnifiController extends IPSModule
+class UnifiProtect extends IPSModule
 {
     use ModuleUtilities;
     use CustomWebSocketClient;
