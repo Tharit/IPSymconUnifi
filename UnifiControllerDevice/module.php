@@ -86,7 +86,7 @@ class UnifiController extends IPSModule
         switch ($Message) {
             case IPS_KERNELSTARTED:
             case FM_CONNECT:
-                $this->SendDebug('STARTED / CONNECT', 'resetting connection');
+                $this->SendDebug('STARTED / CONNECT', 'resetting connection', 0);
                 // if new parent and it is already active: connect immediately
                 if($this->UpdateConnection() && $this->HasActiveParent()) {
                     $this->ApplyChanges();
