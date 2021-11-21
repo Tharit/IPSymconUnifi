@@ -126,7 +126,7 @@ class UnifiController extends IPSModule
         if($script && @IPS_GetScript($script)) {
             $data = @json_decode($data, true);
             if($data != null && isset($data['data'])) {
-                IPS_RunScriptEx($script, ["Data" => $data['data']]);
+                IPS_RunScriptEx($script, ["Data" => json_encode($data['data'])]);
             }
         }
     }
