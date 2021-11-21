@@ -64,7 +64,7 @@ class UnifiController extends IPSModule
         $parentID = $this->GetConnectionID();
 
         if (IPS_GetProperty($parentID, 'Open')) {
-            $this->WCSDisconnect(false);
+            $this->WSCDisconnect(false);
             //IPS_SetProperty($parentID, 'Open', false);
             //@IPS_ApplyChanges($parentID);
         }

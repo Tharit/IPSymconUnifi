@@ -377,7 +377,7 @@ trait CustomWebSocketClient {
      *
      * @param WebSocketFrame $Frame Ein Objekt welches einen kompletten Frame enthält.
      */
-    private function WSCDecodeFrame(WebSocketFrame $Frame)
+    private function WSCDecodeFrame($Frame)
     {
         $payloadType = $this->MUGetBuffer('PayloadType');
 
