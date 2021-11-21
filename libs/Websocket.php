@@ -196,8 +196,8 @@ trait CustomWebSocketClient {
 
     protected function WSCSetReceiveDataFilter($filter) {
         $this->MUSetBuffer('WSCReceiveDataFilter', $filter);
-        $filter = '.*Ping.*|' . $filter;
         if($this->MUGetBuffer('State') == 2) {
+            $filter = '.*Ping.*|' . $filter;
             $this->SetReceiveDataFilter($filter);
         }
     }
@@ -410,7 +410,12 @@ trait CustomWebSocketClient {
         if ($Frame->Fin) {
             // process data
             $this->SendDebug('Received Data', $data, 0);
-            $this->WSCOnReceiveWebsocketData($Frame->OpCode, $data);
+            try {
+                $this->WSCOnReceiveData($Frame->OpCode, $data);
+            } catch(Exception $e) {
+                trigger_error("Error in websocket data handler: " . $exc->getMessage(), E_USER_WARNING);
+                $this->SendDebug('Received Data', $data, 0);
+            }
             $data = '';
         }
 
