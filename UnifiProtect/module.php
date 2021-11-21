@@ -159,7 +159,7 @@ class UnifiProtect extends IPSModule
         $packetType = unpack('c', $data, $offset + 0);
         $payloadFormat = unpack('c', $data, $offset + 1);
         $deflated = unpack('c', $data, $offset + 2);
-        $payloadSize = unpck('N', $data, $offset + 4);
+        $payloadSize = unpack('N', $data, $offset + 4);
 
         // action frame
         $offset += 8;
@@ -174,7 +174,7 @@ class UnifiProtect extends IPSModule
         $packetType = unpack('c', $data, $offset + 0);
         $payloadFormat = unpack('c', $data, $offset + 1);
         $deflated = unpack('c', $data, $offset + 2);
-        $payloadSize = unpck('N', $data, $offset + 4);
+        $payloadSize = unpack('N', $data, $offset + 4);
 
         // data frame
         $offset += 8;
