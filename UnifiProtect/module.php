@@ -156,10 +156,10 @@ class UnifiProtect extends IPSModule
     protected function WSCOnReceiveData($opCode, $data) {
         // header
         $offset = 0;
-        $packetType = unpack('c', $data, $offset + 0);
-        $payloadFormat = unpack('c', $data, $offset + 1);
-        $deflated = unpack('c', $data, $offset + 2);
-        $payloadSize = unpack('N', $data, $offset + 4);
+        $packetType = unpack('c', $data, $offset + 0)[1];
+        $payloadFormat = unpack('c', $data, $offset + 1)[1];
+        $deflated = unpack('c', $data, $offset + 2)[1];
+        $payloadSize = unpack('N', $data, $offset + 4)[1];
 
         // action frame
         $offset += 8;
@@ -171,10 +171,10 @@ class UnifiProtect extends IPSModule
 
         // header
         $offset += $payloadSize;
-        $packetType = unpack('c', $data, $offset + 0);
-        $payloadFormat = unpack('c', $data, $offset + 1);
-        $deflated = unpack('c', $data, $offset + 2);
-        $payloadSize = unpack('N', $data, $offset + 4);
+        $packetType = unpack('c', $data, $offset + 0)[1];
+        $payloadFormat = unpack('c', $data, $offset + 1)[1];
+        $deflated = unpack('c', $data, $offset + 2)[1];
+        $payloadSize = unpack('N', $data, $offset + 4)[1];
 
         // data frame
         $offset += 8;
