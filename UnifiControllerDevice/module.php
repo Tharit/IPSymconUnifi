@@ -123,7 +123,7 @@ class UnifiController extends IPSModule
     protected function WSCOnReceiveData($opCode, $data) {
         $script = $this->ReadPropertyInteger('script');
         if($script && @IPS_GetScript($script)) {
-            $data = @json_decode($data);
+            $data = @json_decode($data, true);
             if($data != null && isset($data['data'])) {
                 IPS_RunScriptEx($script, ["Data" => $data['data']]);
             }
