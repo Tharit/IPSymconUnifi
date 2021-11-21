@@ -1,0 +1,20 @@
+{
+    "elements":
+        [
+            {
+                "name": "username",
+                "type": "ValidationTextBox",
+                "caption": "Username"
+            },
+            {
+                "name": "password",
+                "type": "PasswordTextBox",
+                "caption": "Password"
+            },
+            {
+                "name": "script",
+                "type": "SelectScript",
+                "caption": "Event handler script"
+            }
+        ]
+}
