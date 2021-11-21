@@ -197,8 +197,12 @@ trait CustomWebSocketClient {
     protected function WSCSetReceiveDataFilter($filter) {
         $this->MUSetBuffer('WSCReceiveDataFilter', $filter);
         if($this->MUGetBuffer('State') == 2) {
-            $filter = '.*Ping.*|' . $filter;
-            $this->SetReceiveDataFilter($filter);
+            if($filter) {
+                $filter = '.*Ping.*|' . $filter;
+                $this->SetReceiveDataFilter($filter);
+            } else {
+                $this->SetReceiveDataFilter('');
+            }
         }
     }
 
@@ -333,10 +337,8 @@ trait CustomWebSocketClient {
                     $filter = $this->MUGetBuffer('WSCReceiveDataFilter');
                     if($filter) {
                         $filter = '.*Ping.*|'.$filter;
-                    } else {
-                        $filter = '.*Ping.*';
+                        $this->SetReceiveDataFilter($filter);
                     }
-                    $this->SetReceiveDataFilter($filter);
                     return;
                 } else {
                     $this->SendDebug('Incomplete handshake response', $data, 0);

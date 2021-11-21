@@ -8,11 +8,13 @@ https://192.168.1.1/proxy/network/api/s/default/stat/event?start=1637485298&end=
  */
 require_once(__DIR__ . '/../libs/ModuleUtilities.php');
 require_once(__DIR__ . '/../libs/Websocket.php');
+require_once(__DIR__ . '/../libs/UnifiAPI.php');
 
 class UnifiController extends IPSModule
 {
     use ModuleUtilities;
     use CustomWebSocketClient;
+    use UnifiAPI;
 
     public function Create()
     {
@@ -126,7 +128,9 @@ class UnifiController extends IPSModule
         if($script && @IPS_GetScript($script)) {
             $data = @json_decode($data, true);
             if($data != null && isset($data['data'])) {
-                IPS_RunScriptEx($script, ["Data" => json_encode($data['data'])]);
+                foreach($data['data'] as $event) {
+                    IPS_RunScriptEx($script, ["Data" => json_encode($event)]);
+                }
             }
         }
     }
@@ -157,7 +161,10 @@ class UnifiController extends IPSModule
             IPS_LogMessage('WSC', 'Tried to connect while already connected');
             return;
         }
-        $cookie = $this->Login();
+        $ip = $this->ReadPropertyString("ip");
+        $username = $this->ReadPropertyString("username");
+        $password = $this->ReadPropertyString("password");
+        $cookie = $this->Login($ip, $username, $password);
         if($cookie === false) {
             $this->WSCDisconnect();
             return;
@@ -169,44 +176,5 @@ class UnifiController extends IPSModule
     private function Disconnect() {
         $canReconnect = $this->ReadPropertyString('username') && $this->ReadPropertyString('password');
         $this->WSCDisconnect($canReconnect);
-    }
-
-    private function Login() {
-        $url = "https://" . $this->ReadPropertyString("ip") . "/api/auth/login";
-        $username = $this->ReadPropertyString("username");
-        $password = $this->ReadPropertyString("password");
-
-        $headers = [];
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HEADERFUNCTION, function( $curl, $header_line ) use (&$headers) {
-            $idx = strpos($header_line,':');
-            if($idx >= 1) {
-                $name = substr($header_line, 0, $idx);
-                $value = trim(substr($header_line, $idx + 1));
-                $headers[$name] = $value;
-            }
-            return strlen($header_line);
-        });
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(["username" => $username,"password" => $password]));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-        curl_exec($ch);
-        curl_close($ch);
-
-        if(!isset($headers['Set-Cookie'])) {
-            $this->SendDebug('Cookie', 'Login failed', 0);
-            return false;
-        }
-        $cookie = explode(';', $headers['Set-Cookie'])[0];
-
-        $this->SendDebug('Cookie', $cookie, 0);
-
-        return $cookie;
     }
 }
