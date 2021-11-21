@@ -173,7 +173,7 @@ class UnifiProtect extends IPSModule
         }
 
         $path = '/proxy/protect/ws/updates?lastUpdateId=' . $bootstrap['lastUpdateId'];
-        $this->WSCConnect($path, $cookie);
+        $this->WSCConnect($ip, $path, $cookie);
     }
 
     private function Disconnect() {

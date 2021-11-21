@@ -170,7 +170,7 @@ class UnifiController extends IPSModule
             return;
         }
         $path = '/proxy/network/wss/s/default/events?clients=v2';
-        $this->WSCConnect($path, $cookie);
+        $this->WSCConnect($ip, $path, $cookie);
     }
 
     private function Disconnect() {

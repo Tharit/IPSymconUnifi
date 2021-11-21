@@ -236,14 +236,14 @@ trait CustomWebSocketClient {
     /**
      *
      */
-    protected function WSCConnect($path, $cookie)
+    protected function WSCConnect($ip, $path, $cookie)
     {
         $SendKey = base64_encode(openssl_random_pseudo_bytes(16));
         $Key = base64_encode(sha1($SendKey . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11', true));
         $this->MUSetBuffer('HandshakeKey', $Key);
 
         $Header[] = 'GET ' . $path . ' HTTP/1.1';
-        $Header[] = 'Host: ' . $this->ReadPropertyString("ip");
+        $Header[] = 'Host: ' . $ip;
         $Header[] = 'Cookie: ' . $cookie;
         $Header[] = 'Upgrade: websocket';
         $Header[] = 'Connection: Upgrade';
