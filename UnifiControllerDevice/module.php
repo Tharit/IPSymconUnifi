@@ -116,11 +116,11 @@ class UnifiController extends IPSModule
         $this->WSCReceiveData($data);
     }
 
-    public function WSCOnDisconnect() {
+    protected function WSCOnDisconnect() {
         return $this->ReadPropertyString('username') && $this->ReadPropertyString('password');
     }
  
-    public function WSCOnReceiveData($opCode, $data) {
+    protected function WSCOnReceiveData($opCode, $data) {
         $script = $this->ReadPropertyInteger('script');
         if($script && @IPS_GetScript($script)) {
             $data = @json_decode($data);
