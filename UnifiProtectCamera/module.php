@@ -55,6 +55,6 @@ class UnifiProtectCamera extends IPSModule
                 $this->SetValue('IsMotionDetected', $data['isMotionDetected']);
             }
         }
-        $this->SendDebug('Data', $data, 0);
+        $this->SendDebug('Data', json_encode($data), 0);
     }
 }
