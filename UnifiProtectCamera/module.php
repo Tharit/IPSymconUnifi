@@ -31,6 +31,28 @@ class UnifiProtectCamera extends IPSModule
     }
 
     public function ReceiveData($data) {
+        $data = json_decode($data, true);
+        $uuid = $this->ReadPropertyString('uuid');
+        if($data['id'] !== $uuid) return;
+
+        if(isset($data['lastRing'])) {
+            $value = $this->GetValue('LastRing');
+            if($value != $data['lastRing']) {
+                $this->SetValue('LastRing', $data['lastRing']);
+            }
+        }
+        if(isset($data['lastMotion'])) {
+            $value = $this->GetValue('LastMotion');
+            if($value != $data['lastMotion']) {
+                $this->SetValue('LastMotion', $data['lastMotion']);
+            }
+        }
+        if(isset($data['isMotionDetected'])) {
+            $value = $this->GetValue('IsMotionDetected');
+            if($value != $data['isMotionDetected']) {
+                $this->SetValue('IsMotionDetected', $data['isMotionDetected']);
+            }
+        }
         $this->SendDebug('Data', $data, 0);
     }
 }

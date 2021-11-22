@@ -187,10 +187,7 @@ class UnifiProtect extends IPSModule
 
             $this->SendDebug('data', $actionJSON['modelKey'] . ' ' . $actionJSON['id'] . ': ' . $data['data'], 0);
 
-            $this->SendDataToChildren(json_encode([
-                "DataID" => "{E2D9573A-39CC-49AC-A2AA-FB7A619A7970}",
-                "Buffer" => json_encode(["id" => $actionJSON['id'], "data" => $data['data']])
-            ]));
+            $this->SendDataToChildren(json_encode(["id" => $actionJSON['id'], "data" => $data['data']]));
             /*
             if($actionJSON['action'] === 'add' && $actionJSON['modelKey'] === 'event') {
 
@@ -262,10 +259,7 @@ class UnifiProtect extends IPSModule
         }
 
         foreach($bootstrap['cameras'] as $camera) {
-            $this->SendDataToChildren(json_encode([
-                "DataID" => "{E2D9573A-39CC-49AC-A2AA-FB7A619A7970}",
-                "Buffer" =>json_encode(["id"=>$camera["id"],"data"=>$camera])
-            ]));
+            $this->SendDataToChildren(json_encode(["id"=>$camera["id"],"data"=>$camera]));
         }
 
         $path = '/proxy/protect/ws/updates?lastUpdateId=' . $bootstrap['lastUpdateId'];
