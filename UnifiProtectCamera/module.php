@@ -19,6 +19,12 @@ class UnifiProtectCamera extends IPSModule
         $this->SetReceiveDataFilter('.*'.preg_quote('\"id\":\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
     }
 
+    private function SetupVariables($data) {
+        if($data['hasChime']) {
+            $this->RegisterVariableInteger("LastRing", "Last Ring", "~UnixTimestamp");
+        }
+    }
+
     /**
      * Configuration changes
      */
@@ -27,12 +33,6 @@ class UnifiProtectCamera extends IPSModule
         parent::ApplyChanges();
         $uuid = $this->ReadPropertyString('uuid');
         $this->SetReceiveDataFilter('.*'.preg_quote('\"id\":\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
-    }
-
-    public function SetupVariables($data) {
-        if($data['hasChime']) {
-            $this->RegisterVariableInteger("LastRing", "Last Ring", "~UnixTimestamp");
-        }
     }
 
     public function ReceiveData($data) {
