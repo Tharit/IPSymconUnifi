@@ -1,0 +1,15 @@
+{
+	"id": "{A1B9CF20-3233-4637-BA11-ED108B10B178}",
+	"name": "UnifiProtectCamera",
+	"type": 3,
+	"vendor": "Ubiquiti",
+	"aliases": 
+	[
+		"Unifi Protect Camera"
+	],
+	"parentRequirements": ["{4DF70A1D-17C7-4B2B-BBEC-E39407BB8252}"],
+	"childRequirements": [],
+	"implemented": ["{E2D9573A-39CC-49AC-A2AA-FB7A619A7970}"],
+	"prefix": "UnifiProtect",
+    "url": "https://github.com/tharit/IPSymconUnifi"
+}
