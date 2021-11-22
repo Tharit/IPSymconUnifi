@@ -37,6 +37,8 @@ class UnifiProtectCamera extends IPSModule
         $uuid = $this->ReadPropertyString('uuid');
         if($data['id'] !== $uuid) return;
 
+        $data = $data['data'];
+
         if(isset($data['lastRing'])) {
             $value = $this->GetValue('LastRing');
             if($value != $data['lastRing']) {
