@@ -17,7 +17,7 @@ class UnifiProtectCamera extends IPSModule
         $this->RegisterVariableBoolean("IsMotionDetected", "Is Motion Detected");
 
         $uuid = $this->ReadPropertyString('uuid');
-     //   $this->SetReceiveDataFilter('.*'.preg_quote('\"id\":\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
+        $this->SetReceiveDataFilter('.*'.preg_quote('\"id\":\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
     }
 
     /**
@@ -27,11 +27,10 @@ class UnifiProtectCamera extends IPSModule
     {
         parent::ApplyChanges();
         $uuid = $this->ReadPropertyString('uuid');
-       // $this->SetReceiveDataFilter('.*'.preg_quote('\"id\":\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
-        $this->SendDebug('filter', '.*'.preg_quote('\"id\":\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*', 0);
+        $this->SetReceiveDataFilter('.*'.preg_quote('\"id\":\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
     }
 
     public function ReceiveData($data) {
-        $this->SendDebug('Data', $data);
+        $this->SendDebug('Data', $data, 0);
     }
 }
