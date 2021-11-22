@@ -32,7 +32,7 @@ class UnifiProtectCamera extends IPSModule
 
     public function ReceiveData($data) {
         $data = json_decode($data, true);
-        $data = json_decode($data['Buffer']);
+        $data = json_decode($data['Buffer'], true);
 
         $uuid = $this->ReadPropertyString('uuid');
         if($data['id'] !== $uuid) return;
