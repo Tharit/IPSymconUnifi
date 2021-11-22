@@ -181,22 +181,24 @@ class UnifiProtect extends IPSModule
         $action = $this->ParseFrame($data, $offset);
         $data = $this->ParseFrame($data, $offset);
 
-        $this->SendDebug('data', $action['modelKey'] . ' ' . $action['id'] . ': ' . $data['data'], 0);
-
         if($action['format'] === 1 && $data['format'] === 1) {
-            $action = json_decode($action['data']);
-            $data = json_decode($data['data']);
+            $actionJSON = json_decode($action['data']);
+            $dataJSON = json_decode($data['data']);
+
+            $this->SendDebug('data', $actionJSON['modelKey'] . ' ' . $actionJSON['id'] . ': ' . $data['data'], 0);
 
             // {"action":"update","newUpdateId":"40b18320-f2b6-496a-b102-15a9c08de2b3","modelKey":"nvr","id":"60d70f1b011fc903870003e9"}
 
-            if($action['action'] === 'add' && $action['modelKey'] === 'event') {
+            if($actionJSON['action'] === 'add' && $actionJSON['modelKey'] === 'event') {
 
                 // ring events
-                if($data['type'] === 'ring') {
-                    $this->SendDebug('Ring', $data['camera'], 0);
+                if($dataJSON['type'] === 'ring') {
+                    $this->SendDebug('Ring', $dataJSON['camera'], 0);
                 }
 
             }
+        } else {
+            $this->SendDebug('data', $action . ' ' . $data, 0);
         }
 
         /*
