@@ -12,7 +12,6 @@ class UnifiProtectCamera extends IPSModule
         $this->RegisterPropertyString('uuid', '');
 
         // variables
-        $this->RegisterVariableInteger("LastRing", "Last Ring", "~UnixTimestamp");
         $this->RegisterVariableInteger("LastMotion", "Last Motion", "~UnixTimestamp");
         $this->RegisterVariableBoolean("IsMotionDetected", "Is Motion Detected");
 
@@ -30,6 +29,12 @@ class UnifiProtectCamera extends IPSModule
         $this->SetReceiveDataFilter('.*'.preg_quote('\"id\":\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
     }
 
+    public function SetupVariables($data) {
+        if($data['hasChime']) {
+            $this->RegisterVariableInteger("LastRing", "Last Ring", "~UnixTimestamp");
+        }
+    }
+
     public function ReceiveData($data) {
         $data = json_decode($data, true);
         $data = json_decode($data['Buffer'], true);
@@ -39,7 +44,11 @@ class UnifiProtectCamera extends IPSModule
 
         $data = $data['data'];
 
-        if(isset($data['lastRing'])) {
+        if(isset($data['featureFlags'])) {
+            $this->SetupVariables($data['featureFlags']);
+        }
+
+        if(isset($data['lastRing']) && $this->GetIDForIdent('LastRing')) {
             $value = $this->GetValue('LastRing');
             if($value != $data['lastRing']) {
                 $this->SetValue('LastRing', round($data['lastRing']/1000));
