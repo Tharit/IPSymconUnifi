@@ -189,7 +189,7 @@ class UnifiProtect extends IPSModule
 
             $this->SendDataToChildren(json_encode([
                 "DataID" => "{E2D9573A-39CC-49AC-A2AA-FB7A619A7970}",
-                "Buffer" => json_encode(["id" => $actionJSON['id'], "data" => $data['data']])
+                "Buffer" => json_encode(["id" => $actionJSON['id'], "data" => $dataJSON])
             ]));
             /*
             if($actionJSON['action'] === 'add' && $actionJSON['modelKey'] === 'event') {

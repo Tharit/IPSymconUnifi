@@ -42,13 +42,13 @@ class UnifiProtectCamera extends IPSModule
         if(isset($data['lastRing'])) {
             $value = $this->GetValue('LastRing');
             if($value != $data['lastRing']) {
-                $this->SetValue('LastRing', $data['lastRing']);
+                $this->SetValue('LastRing', round($data['lastRing']/1000));
             }
         }
         if(isset($data['lastMotion'])) {
             $value = $this->GetValue('LastMotion');
             if($value != $data['lastMotion']) {
-                $this->SetValue('LastMotion', $data['lastMotion']);
+                $this->SetValue('LastMotion', round($data['lastMotion']/1000));
             }
         }
         if(isset($data['isMotionDetected'])) {
