@@ -2,7 +2,7 @@
     "elements":
         [
             {
-                "name": "ID",
+                "name": "uuid",
                 "type": "ValidationTextBox",
                 "caption": "Unifi ID"
             }
