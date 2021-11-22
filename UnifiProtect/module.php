@@ -182,8 +182,8 @@ class UnifiProtect extends IPSModule
         $data = $this->ParseFrame($data, $offset);
 
         if($action['format'] === 1 && $data['format'] === 1) {
-            $actionJSON = json_decode($action['data']);
-            $dataJSON = json_decode($data['data']);
+            $actionJSON = json_decode($action['data'], true);
+            $dataJSON = json_decode($data['data'], true);
 
             $this->SendDebug('data', $actionJSON['modelKey'] . ' ' . $actionJSON['id'] . ': ' . $data['data'], 0);
 
