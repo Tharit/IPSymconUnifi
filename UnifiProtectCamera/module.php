@@ -32,6 +32,17 @@ class UnifiProtectCamera extends IPSModule
         }
     }
 
+    private function RequestInit() {
+        if(!$this->ReadPropertyString('uuid')) return;
+        $this->SendDataToParent(json_encode([
+            'DataID' => '{4DF70A1D-17C7-4B2B-BBEC-E39407BB8252}',
+            'Buffer' => json_encode([
+                'id' => $this->ReadPropertyString('uuid'),
+                'action' => 'init'
+            ])
+        ]));
+    }
+
     /**
      * Configuration changes
      */
@@ -40,6 +51,7 @@ class UnifiProtectCamera extends IPSModule
         parent::ApplyChanges();
         $uuid = $this->ReadPropertyString('uuid');
         $this->SetReceiveDataFilter('.*'.preg_quote('\"id\":\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
+        $this->RequestInit();
     }
 
     public function ReceiveData($data) {
@@ -80,13 +92,7 @@ class UnifiProtectCamera extends IPSModule
     {
         switch ($Message) {
             case FM_CONNECT:
-                $this->SendDataToParent(json_encode([
-                    'DataID' => '{4DF70A1D-17C7-4B2B-BBEC-E39407BB8252}',
-                    'Buffer' => json_encode([
-                        'id' => $this->ReadPropertyString('uuid'),
-                        'action' => 'init'
-                    ])
-                ]));
+                $this->RequestInit();
                 break;
         }
     }
