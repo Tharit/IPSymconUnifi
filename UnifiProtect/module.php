@@ -252,6 +252,17 @@ class UnifiProtect extends IPSModule
     }
 
     private function Bootstrap() {
+        $parentID = $this->GetConnectionID();
+        $ip = IPS_GetProperty($parentID, 'Host');
+        $username = $this->ReadPropertyString("username");
+        $password = $this->ReadPropertyString("password");
+        $cookie = $this->Login($ip, $username, $password);
+        if($cookie === false) {
+            $this->SendDebug('Login', 'Failed to get cookie', 0);
+            $this->WSCDisconnect();
+            return;
+        }
+
         $bootstrap = $this->Request($ip, '/proxy/protect/api/bootstrap', $cookie);
         $this->SendDebug('Bootstrap', json_encode($bootstrap), 0);
         if(!$bootstrap || !isset($bootstrap['lastUpdateId'])) {
@@ -268,7 +279,11 @@ class UnifiProtect extends IPSModule
 
         $this->MUSetBuffer('Bootstrapped', true);
 
-        return $bootstrap;
+        return [
+            "ip" => $ip,
+            "cookie" => $cookie,
+            "data" => $bootstrap
+        ];
     }
 
     private function Connect() {
@@ -277,21 +292,10 @@ class UnifiProtect extends IPSModule
             return;
         }
 
-        $parentID = $this->GetConnectionID();
-        $ip = IPS_GetProperty($parentID, 'Host');
-        $username = $this->ReadPropertyString("username");
-        $password = $this->ReadPropertyString("password");
-        $cookie = $this->Login($ip, $username, $password);
-        if($cookie === false) {
-            $this->SendDebug('Login', 'Failed to get cookie', 0);
-            $this->WSCDisconnect();
-            return;
-        }
-
         $bootstrap = $this->Bootstrap();
 
-        $path = '/proxy/protect/ws/updates?lastUpdateId=' . $bootstrap['lastUpdateId'];
-        $this->WSCConnect($ip, $path, $cookie);
+        $path = '/proxy/protect/ws/updates?lastUpdateId=' . $bootstrap['data']['lastUpdateId'];
+        $this->WSCConnect($bootstrap['ip'], $path, $bootstrap['cookie']);
     }
 
     private function Disconnect() {
