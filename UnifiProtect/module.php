@@ -146,14 +146,28 @@ class UnifiProtect extends IPSModule
     }
 
     public function ReceiveData($data) {
+        $this->MUSetBuffer('Bootstrapped', false);
         $this->WSCReceiveData($data);
+    }
+
+    public function ForwardData($data) {
+        $data = json_decode($data, true);
+        $data = json_decode($data['Buffer'], true);
+
+        $uuid = $data['id'];
+        $action = $data['action'];
+
+        $this->SendDebug('Child request', $data['Buffer']);
+
+        if($action === 'init') {
+            $this->Bootstrap();
+        }
     }
 
     protected function WSCOnDisconnect() {
         return $this->ReadPropertyString('username') && $this->ReadPropertyString('password');
     }
  
-
     protected function ParseFrame($data, &$offset) {
         // header
         $packetType = unpack('c', $data, $offset + 0)[1];
@@ -237,6 +251,26 @@ class UnifiProtect extends IPSModule
         $this->WSCResetState();
     }
 
+    private function Bootstrap() {
+        $bootstrap = $this->Request($ip, '/proxy/protect/api/bootstrap', $cookie);
+        $this->SendDebug('Bootstrap', json_encode($bootstrap), 0);
+        if(!$bootstrap || !isset($bootstrap['lastUpdateId'])) {
+            $this->SendDebug('Login', 'Failed to load bootstrap data', 0);
+            $this->WSCDisconnect(false);
+        }
+
+        foreach($bootstrap['cameras'] as $camera) {
+            $this->SendDataToChildren(json_encode([
+                "DataID" => "{E2D9573A-39CC-49AC-A2AA-FB7A619A7970}",
+                "Buffer" =>json_encode(["id"=>$camera["id"],"data"=>$camera])
+            ]));
+        }
+
+        $this->MUSetBuffer('Bootstrapped', true);
+
+        return $bootstrap;
+    }
+
     private function Connect() {
         if($this->WSCGetState() != 0) {
             IPS_LogMessage('WSC', 'Tried to connect while already connected');
@@ -254,19 +288,7 @@ class UnifiProtect extends IPSModule
             return;
         }
 
-        $bootstrap = $this->Request($ip, '/proxy/protect/api/bootstrap', $cookie);
-        $this->SendDebug('Bootstrap', json_encode($bootstrap), 0);
-        if(!$bootstrap || !isset($bootstrap['lastUpdateId'])) {
-            $this->SendDebug('Login', 'Failed to load bootstrap data', 0);
-            $this->WSCDisconnect(false);
-        }
-
-        foreach($bootstrap['cameras'] as $camera) {
-            $this->SendDataToChildren(json_encode([
-                "DataID" => "{E2D9573A-39CC-49AC-A2AA-FB7A619A7970}",
-                "Buffer" =>json_encode(["id"=>$camera["id"],"data"=>$camera])
-            ]));
-        }
+        $bootstrap = $this->Bootstrap();
 
         $path = '/proxy/protect/ws/updates?lastUpdateId=' . $bootstrap['lastUpdateId'];
         $this->WSCConnect($ip, $path, $cookie);

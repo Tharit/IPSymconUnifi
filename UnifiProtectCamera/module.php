@@ -1,5 +1,12 @@
 <?php
 
+/*
+
+on create / attach:
+    - request latest status from parent!
+
+*/
+
 class UnifiProtectCamera extends IPSModule
 {
     public function Create()
@@ -67,5 +74,20 @@ class UnifiProtectCamera extends IPSModule
             }
         }
         $this->SendDebug('Data', json_encode($data), 0);
+    }
+
+    public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
+    {
+        switch ($Message) {
+            case FM_CONNECT:
+                $this->SendDataToParent(json_encode([
+                    'DataID' => '{4DF70A1D-17C7-4B2B-BBEC-E39407BB8252}',
+                    'Buffer' => json_encode([
+                        'id' => $this->ReadPropertyString('uuid'),
+                        'action' => 'init'
+                    ])
+                ]));
+                break;
+        }
     }
 }
