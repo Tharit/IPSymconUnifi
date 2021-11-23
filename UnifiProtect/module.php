@@ -154,10 +154,10 @@ class UnifiProtect extends IPSModule
         $data = json_decode($data, true);
         $data = json_decode($data['Buffer'], true);
 
+        $this->SendDebug('Child request', $data['Buffer'], 0);
+
         $uuid = $data['id'];
         $action = $data['action'];
-
-        $this->SendDebug('Child request', $data['Buffer'], 0);
 
         if($action === 'init') {
             $this->Bootstrap();
