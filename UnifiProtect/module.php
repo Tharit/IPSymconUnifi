@@ -151,10 +151,10 @@ class UnifiProtect extends IPSModule
     }
 
     public function ForwardData($data) {
+        $this->SendDebug('Child request', $data, 0);
+
         $data = json_decode($data, true);
         $data = json_decode($data['Buffer'], true);
-
-        $this->SendDebug('Child request', $data['Buffer'], 0);
 
         $uuid = $data['id'];
         $action = $data['action'];
