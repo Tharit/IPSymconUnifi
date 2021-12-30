@@ -2,9 +2,6 @@
 
 /*
 
-on create / attach:
-    - request latest status from parent!
-
 */
 
 class UnifiProtectCamera extends IPSModule

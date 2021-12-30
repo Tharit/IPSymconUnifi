@@ -260,7 +260,7 @@ class UnifiProtect extends IPSModule
         if($cookie === false) {
             $this->SendDebug('Login', 'Failed to get cookie', 0);
             $this->WSCDisconnect();
-            return;
+            return null;
         }
 
         $bootstrap = $this->Request($ip, '/proxy/protect/api/bootstrap', $cookie);
@@ -268,6 +268,7 @@ class UnifiProtect extends IPSModule
         if(!$bootstrap || !isset($bootstrap['lastUpdateId'])) {
             $this->SendDebug('Login', 'Failed to load bootstrap data', 0);
             $this->WSCDisconnect(false);
+            return null;
         }
 
         foreach($bootstrap['cameras'] as $camera) {
@@ -293,6 +294,7 @@ class UnifiProtect extends IPSModule
         }
 
         $bootstrap = $this->Bootstrap();
+        if(!$bootstrap) return;
 
         $path = '/proxy/protect/ws/updates?lastUpdateId=' . $bootstrap['data']['lastUpdateId'];
         $this->WSCConnect($bootstrap['ip'], $path, $bootstrap['cookie']);
