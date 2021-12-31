@@ -18,6 +18,8 @@ class UnifiProtectCamera extends IPSModule
         // variables
         $this->RegisterVariableInteger("LastMotion", "Last Motion", "~UnixTimestamp");
         $this->RegisterVariableBoolean("IsMotionDetected", "Is Motion Detected");
+        $this->RegisterVariableInteger("LastSmartDetection", "Last Smart Detection", "~UnixTimestamp");
+        $this->RegisterVariableBoolean("IsSmartDetected", "Is Smart Detected");
 
         $uuid = $this->ReadPropertyString('uuid');
         $this->SetReceiveDataFilter('.*'.preg_quote('\"id\":\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
@@ -84,6 +86,18 @@ class UnifiProtectCamera extends IPSModule
             $value = $this->GetValue('IsMotionDetected');
             if($value != $data['isMotionDetected']) {
                 $this->SetValue('IsMotionDetected', $data['isMotionDetected']);
+            }
+        }
+        if(isset($data['lastSmartDetection'])) {
+            $value = $this->GetValue('LastSmartDetection');
+            if($value != $data['lastSmartDetection']) {
+                $this->SetValue('LastSmartDetection', round($data['lastSmartDetection']/1000));
+            }
+        }
+        if(isset($data['isSmartDetected'])) {
+            $value = $this->GetValue('IsSmartDetected');
+            if($value != $data['isSmartDetected']) {
+                $this->SetValue('IsSmartDetected', $data['isSmartDetected']);
             }
         }
         $this->SendDebug('Data', json_encode($data), 0);
