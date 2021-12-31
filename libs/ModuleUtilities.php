@@ -20,7 +20,7 @@ trait ModuleUtilities {
         $newParentID = IPS_GetInstance($this->InstanceID)['ConnectionID'];
         $oldParentID = $this->MUGetBuffer('ConnectionID');
 
-        $this->LogMessage($newParentID . '|' . $oldParentID, KL_NOTIFY);
+        $this->SendDebug('UpdateConnection',$newParentID . '|' . $oldParentID, 0);
         
         if($newParentID === $oldParentID) return false;
 
