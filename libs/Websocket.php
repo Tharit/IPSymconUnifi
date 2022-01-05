@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * Based on code from on IPSNetwork by Nall-chan
+ * https://github.com/Nall-chan/IPSNetwork
+ */
+
+/**
  * Alle OpCodes für einen Websocket-Frame.
  */
 class WebSocketOPCode
