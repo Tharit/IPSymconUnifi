@@ -186,7 +186,7 @@ class WebSocketFrame extends stdClass
 
 trait CustomWebSocketClient {
     protected function WSCCreate() {
-        $this->RegisterTimer("PingTimer", 45000, 'IPS_RequestAction($_IPS["TARGET"], "WSCTimerCallback", "PingTimer");');
+        $this->RegisterTimer("PingTimer", 45000, 'IPS_RequestAction($_IPS["TARGET"], "WSC", "PingTimer");');
         $this->RegisterMessage(0, IPS_KERNELSHUTDOWN);
     }
 
