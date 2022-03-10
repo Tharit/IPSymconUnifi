@@ -66,6 +66,7 @@ class UnifiProtect extends IPSModule
         $this->WSCCreate();
 
         // variables
+        $this->RegisterVariableBoolean("Connected", "Connected");
         /*
         $this->RegisterVariableString("Application", "Application");
         $this->RegisterVariableString("State", "State");
@@ -138,6 +139,8 @@ class UnifiProtect extends IPSModule
                 // if parent became active: connect
                 if ($Data[0] === IS_ACTIVE) {
                     $this->Connect();
+                } else {
+                    $this->SetValue("Connected", false);
                 }
                 break;
             default:
@@ -164,7 +167,12 @@ class UnifiProtect extends IPSModule
         }
     }
 
+    protected function WSCOnConnect() {
+        $this->SetValue("Connected", true);
+    }
+
     protected function WSCOnDisconnect() {
+        $this->SetValue("Connected", false);
         return $this->ReadPropertyString('username') && $this->ReadPropertyString('password');
     }
  
@@ -267,7 +275,7 @@ class UnifiProtect extends IPSModule
         $this->SendDebug('Bootstrap', json_encode($bootstrap), 0);
         if(!$bootstrap || !isset($bootstrap['lastUpdateId'])) {
             $this->SendDebug('Login', 'Failed to load bootstrap data', 0);
-            $this->WSCDisconnect(false);
+            $this->WSCDisconnect();
             return null;
         }
 

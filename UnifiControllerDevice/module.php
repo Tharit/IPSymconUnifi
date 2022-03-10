@@ -33,6 +33,7 @@ class UnifiController extends IPSModule
         $this->WSCCreate();
 
         // variables
+        $this->RegisterVariableBoolean("Connected", "Connected");
         /*
         $this->RegisterVariableString("Application", "Application");
         $this->RegisterVariableString("State", "State");
@@ -118,7 +119,12 @@ class UnifiController extends IPSModule
         $this->WSCReceiveData($data);
     }
 
+    protected function WSCOnConnect() {
+        $this->SetValue("Connected", true);
+    }
+
     protected function WSCOnDisconnect() {
+        $this->SetValue("Connected", false);
         return $this->ReadPropertyString('username') && $this->ReadPropertyString('password');
     }
  

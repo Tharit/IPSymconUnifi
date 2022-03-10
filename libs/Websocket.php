@@ -300,6 +300,9 @@ trait CustomWebSocketClient {
 
         if($state === 0) {
             $this->SendDebug('Error', 'Unexpected data received while connecting', 0);
+            $this->WSCDisconnect();
+            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            return;
         } else if($state === 1) {
             try {
                 if (strpos($data, "\r\n\r\n") !== false) {
@@ -338,6 +341,7 @@ trait CustomWebSocketClient {
                     }
                     $this->MUSetBuffer('Data', '');
                     $this->MUSetBuffer('State', 2);
+                    $this->WSCOnConnect();
 
                     $filter = $this->MUGetBuffer('WSCReceiveDataFilter');
                     if($filter) {
