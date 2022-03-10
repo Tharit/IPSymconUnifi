@@ -108,6 +108,8 @@ class UnifiController extends IPSModule
                 // if parent became active: connect
                 if ($Data[0] === IS_ACTIVE) {
                     $this->Connect();
+                } else {
+                    $this->SetValue("Connected", false);
                 }
                 break;
             default:
