@@ -158,28 +158,32 @@ class UnifiController extends IPSModule
         $parentID = $this->GetConnectionID();
         $ip = IPS_GetProperty($parentID, 'Host');
         $cookie = $this->MUGetBuffer('cookie');
-        return $this->Request($ip, '/proxy/network/api/s/default/stat/user/' . $mac, $cookie);
+        $csrfToken = $this->MUGetBuffer('x-csrf-token');
+        return $this->Request($ip, '/proxy/network/api/s/default/stat/user/' . $mac, $cookie, $csrfToken);
     }
 
     public function GetAccessDevices(string $mac) {
         $parentID = $this->GetConnectionID();
         $ip = IPS_GetProperty($parentID, 'Host');
         $cookie = $this->MUGetBuffer('cookie');
-        return $this->Request($ip, '/proxy/network/api/s/default/stat/device/' . $mac, $cookie);
+        $csrfToken = $this->MUGetBuffer('x-csrf-token');
+        return $this->Request($ip, '/proxy/network/api/s/default/stat/device/' . $mac, $cookie, $csrfToken);
     }
 
     public function GetPortConfig() {
         $parentID = $this->GetConnectionID();
         $ip = IPS_GetProperty($parentID, 'Host');
         $cookie = $this->MUGetBuffer('cookie');
-        return $this->Request($ip, '/proxy/network/api/s/default/list/portconf/', $cookie);
+        $csrfToken = $this->MUGetBuffer('x-csrf-token');
+        return $this->Request($ip, '/proxy/network/api/s/default/list/portconf/', $cookie, $csrfToken);
     }
 
     public function SetDeviceSettingsBase(string $deviceId, string $payload) {
         $parentID = $this->GetConnectionID();
         $ip = IPS_GetProperty($parentID, 'Host');
         $cookie = $this->MUGetBuffer('cookie');
-        return $this->Request($ip, '/proxy/network/api/s/default/rest/device/' . $deviceId, $cookie, $payload, 'PUT');
+        $csrfToken = $this->MUGetBuffer('x-csrf-token');
+        return $this->Request($ip, '/proxy/network/api/s/default/rest/device/' . $deviceId, $cookie, $csrfToken, $payload, 'PUT');
     }
 
     //------------------------------------------------------------------------------------
@@ -188,6 +192,7 @@ class UnifiController extends IPSModule
     private function ResetState() {
         $this->WSCResetState();
         $this->MUSetBuffer('cookie', '');
+        $this->MUSetBuffer('x-csrf-token', '');
     }
 
     private function Connect() {
@@ -199,12 +204,13 @@ class UnifiController extends IPSModule
         $ip = IPS_GetProperty($parentID, 'Host');
         $username = $this->ReadPropertyString("username");
         $password = $this->ReadPropertyString("password");
-        $cookie = $this->Login($ip, $username, $password);
-        if($cookie === false) {
+        $res = $this->Login($ip, $username, $password);
+        if(!isset($res['cookie']) || $res['cookie'] === false) {
             $this->WSCDisconnect();
             return;
         }
-        $this->MUSetBuffer('cookie', $cookie);
+        $this->MUSetBuffer('cookie', $res['cookie']);
+        $this->MUSetBuffer('x-csrf-token', $res['x-csrf-token']);
         $path = '/proxy/network/wss/s/default/events?clients=v2';
         $this->WSCConnect($ip, $path, $cookie);
     }

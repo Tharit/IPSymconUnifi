@@ -1,7 +1,7 @@
 <?php
 
 trait UnifiAPI {
-    private function Request($ip, $path, $cookie, $post = null, $verb = 'POST') {
+    private function Request($ip, $path, $cookie, $csrfToken = '', $post = null, $verb = 'POST') {
         $url = "https://" . $ip . $path;
 
         $ch = curl_init();
@@ -13,7 +13,11 @@ trait UnifiAPI {
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $verb);
             }
         }
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Cookie: '.$cookie, 'Accept: application/json'));
+        $header = array('Cookie: '.$cookie, 'Accept: application/json');
+        if($csrfToken) {
+            $header[] = 'x-csrf-token: '. $token;
+        }
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         if($post) {
@@ -61,8 +65,16 @@ trait UnifiAPI {
         }
         $cookie = explode(';', $headers['Set-Cookie'])[0];
 
+        $csrfToken = '';
+        if (isset($headers['x-csrf-token'])) {
+            $csrfToken = $headers['x-csrf-token'];
+        }
+
         $this->SendDebug('Cookie', $cookie, 0);
 
-        return $cookie;
+        return [
+            'cookie' => $cookie,
+            'x-csrf-token' => $csrfToken
+        ];
     }
 }
