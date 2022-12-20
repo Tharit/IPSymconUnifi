@@ -156,25 +156,25 @@ class UnifiController extends IPSModule
     //------------------------------------------------------------------------------------
     public function GetClientDevice($mac) {
         $ip = IPS_GetProperty($parentID, 'Host');
-        $cookie = this->MUGetBuffer('cookie');
+        $cookie = $this->MUGetBuffer('cookie');
         return $this->Request($ip, '/api/s/default/stat/user/' . $mac, $cookie);
     }
 
     public function GetAccessDevices($mac) {
         $ip = IPS_GetProperty($parentID, 'Host');
-        $cookie = this->MUGetBuffer('cookie');
+        $cookie = $this->MUGetBuffer('cookie');
         return $this->Request($ip, '/api/s/default/stat/device/' . $mac, $cookie);
     }
 
     public function GetPortConfig() {
         $ip = IPS_GetProperty($parentID, 'Host');
-        $cookie = this->MUGetBuffer('cookie');
+        $cookie = $this->MUGetBuffer('cookie');
         return $this->Request($ip, '/api/s/default/list/portconf/' . $mac, $cookie);
     }
 
     public function SetDeviceSettingsBase($deviceId, $payload) {
         $ip = IPS_GetProperty($parentID, 'Host');
-        $cookie = this->MUGetBuffer('cookie');
+        $cookie = $this->MUGetBuffer('cookie');
         return $this->Request($ip, '/api/s/default/rest/device/' + $deviceId, $cookie, $payload, 'PUT');
     }
 
