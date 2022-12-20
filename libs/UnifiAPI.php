@@ -15,7 +15,7 @@ trait UnifiAPI {
         }
         $header = array('Cookie: '.$cookie, 'Accept: application/json');
         if($csrfToken) {
-            $header[] = 'x-csrf-token: '. $token;
+            $header[] = 'x-csrf-token: '. $csrfToken;
         }
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -71,7 +71,7 @@ trait UnifiAPI {
         }
 
         $this->SendDebug('Cookie', $cookie, 0);
-        $this->SendDebug('x-csrf-token', json_encode($headers), 0);
+        $this->SendDebug('x-csrf-token', $csrfToken, 0);
 
         return [
             'cookie' => $cookie,
