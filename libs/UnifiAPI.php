@@ -17,7 +17,7 @@ trait UnifiAPI {
             } else {
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $verb);
             }
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post));
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
