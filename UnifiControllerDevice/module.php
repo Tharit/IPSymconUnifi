@@ -212,7 +212,7 @@ class UnifiController extends IPSModule
         $this->MUSetBuffer('cookie', $res['cookie']);
         $this->MUSetBuffer('x-csrf-token', $res['x-csrf-token']);
         $path = '/proxy/network/wss/s/default/events?clients=v2';
-        $this->WSCConnect($ip, $path, $cookie);
+        $this->WSCConnect($ip, $path, $res['cookie']);
     }
 
     private function Disconnect() {
