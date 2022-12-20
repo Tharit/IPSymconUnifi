@@ -22,6 +22,8 @@ trait UnifiAPI {
         $result = curl_exec($ch);
         curl_close($ch);
 
+        $this->SendDebug('Request', 'URL: ' . $url . "| Cookie: " . $cookie, 0);
+
         return @json_decode($result, true);
     }
 
