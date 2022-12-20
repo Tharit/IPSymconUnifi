@@ -4,8 +4,6 @@ trait UnifiAPI {
     private function Request($ip, $path, $cookie, $post = null, $verb = 'POST') {
         $url = "https://" . $ip . $path;
 
-        $headers = [];
-
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Cookie: '.$cookie, 'Accept: application/json'));
