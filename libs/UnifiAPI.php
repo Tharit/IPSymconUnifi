@@ -6,15 +6,17 @@ trait UnifiAPI {
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Cookie: '.$cookie, 'Accept: application/json'));
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         if($post) {
             if($verb === 'POST') {
                 curl_setopt($ch, CURLOPT_POST, 1);
             } else {
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $verb);
             }
+        }
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Cookie: '.$cookie, 'Accept: application/json'));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        if($post) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
