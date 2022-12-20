@@ -66,8 +66,8 @@ trait UnifiAPI {
         $cookie = explode(';', $headers['Set-Cookie'])[0];
 
         $csrfToken = '';
-        if (isset($headers['X-CSRF-TOKEN'])) {
-            $csrfToken = $headers['X-CSRF-TOKEN'];
+        if (isset($headers['X-CSRF-Token'])) {
+            $csrfToken = $headers['X-CSRF-Token'];
         }
 
         $this->SendDebug('Cookie', $cookie, 0);
