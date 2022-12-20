@@ -301,7 +301,7 @@ trait CustomWebSocketClient {
         if($state === 0) {
             $this->SendDebug('Error', 'Unexpected data received while connecting', 0);
             $this->WSCDisconnect();
-            trigger_error($exc->getMessage(), E_USER_NOTICE);
+            //trigger_error($exc->getMessage(), E_USER_NOTICE);
             return;
         } else if($state === 1) {
             try {
