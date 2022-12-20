@@ -172,7 +172,7 @@ class UnifiController extends IPSModule
         $parentID = $this->GetConnectionID();
         $ip = IPS_GetProperty($parentID, 'Host');
         $cookie = $this->MUGetBuffer('cookie');
-        return $this->Request($ip, '/proxy/network/api/s/default/list/portconf/' . $mac, $cookie);
+        return $this->Request($ip, '/proxy/network/api/s/default/list/portconf/', $cookie);
     }
 
     public function SetDeviceSettingsBase(string $deviceId, string $payload) {
