@@ -1,7 +1,7 @@
 <?php
 
 trait UnifiAPI {
-    private function Request($ip, $path, $cookie) {
+    private function Request($ip, $path, $cookie, $post = null, $verb = 'POST') {
         $url = "https://" . $ip . $path;
 
         $headers = [];
@@ -11,6 +11,14 @@ trait UnifiAPI {
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Cookie: '.$cookie, 'Accept: application/json'));
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        if($post) {
+            if($verb === 'POST') {
+                curl_setopt($ch, CURLOPT_POST, 1);
+            } else {
+                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $verb);
+            }
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post));
+        }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
         $result = curl_exec($ch);

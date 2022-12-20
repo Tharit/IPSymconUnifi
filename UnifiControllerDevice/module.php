@@ -154,13 +154,36 @@ class UnifiController extends IPSModule
     //------------------------------------------------------------------------------------
     // external methods
     //------------------------------------------------------------------------------------
-    
+    public function GetClientDevice($mac) {
+        $ip = IPS_GetProperty($parentID, 'Host');
+        $cookie = this->MUGetBuffer('cookie');
+        return $this->Request($ip, '/api/s/default/stat/user/' . $mac, $cookie);
+    }
+
+    public function GetAccessDevices($mac) {
+        $ip = IPS_GetProperty($parentID, 'Host');
+        $cookie = this->MUGetBuffer('cookie');
+        return $this->Request($ip, '/api/s/default/stat/device/' . $mac, $cookie);
+    }
+
+    public function GetPortConfig() {
+        $ip = IPS_GetProperty($parentID, 'Host');
+        $cookie = this->MUGetBuffer('cookie');
+        return $this->Request($ip, '/api/s/default/list/portconf/' . $mac, $cookie);
+    }
+
+    public function SetDeviceSettingsBase($deviceId, $payload) {
+        $ip = IPS_GetProperty($parentID, 'Host');
+        $cookie = this->MUGetBuffer('cookie');
+        return $this->Request($ip, '/api/s/default/rest/device/' + $deviceId, $cookie, $payload, 'PUT');
+    }
 
     //------------------------------------------------------------------------------------
     // module internals
     //------------------------------------------------------------------------------------
     private function ResetState() {
         $this->WSCResetState();
+        $this->MUSetBuffer('cookie', '');
     }
 
     private function Connect() {
@@ -177,6 +200,7 @@ class UnifiController extends IPSModule
             $this->WSCDisconnect();
             return;
         }
+        $this->MUSetBuffer('cookie', $cookie);
         $path = '/proxy/network/wss/s/default/events?clients=v2';
         $this->WSCConnect($ip, $path, $cookie);
     }
