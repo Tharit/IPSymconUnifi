@@ -71,7 +71,7 @@ trait UnifiAPI {
         }
 
         $this->SendDebug('Cookie', $cookie, 0);
-        $this->SendDebug('x-csrf-token', $csrfToken, 0);
+        $this->SendDebug('x-csrf-token', json_encode($headers), 0);
 
         return [
             'cookie' => $cookie,
