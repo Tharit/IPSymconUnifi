@@ -264,7 +264,8 @@ class UnifiProtect extends IPSModule
         $ip = IPS_GetProperty($parentID, 'Host');
         $username = $this->ReadPropertyString("username");
         $password = $this->ReadPropertyString("password");
-        $cookie = $this->Login($ip, $username, $password);
+        $res = $this->Login($ip, $username, $password);
+        $cookie = $res['cookie'];
         if($cookie === false) {
             $this->SendDebug('Login', 'Failed to get cookie', 0);
             $this->WSCDisconnect();
