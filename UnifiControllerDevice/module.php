@@ -158,7 +158,7 @@ class UnifiController extends IPSModule
         $parentID = $this->GetConnectionID();
         $ip = IPS_GetProperty($parentID, 'Host');
         $cookie = $this->MUGetBuffer('cookie');
-        return $this->Request($ip, '/api/s/default/stat/user/' . $mac, $cookie);
+        return $this->Request($ip, '/proxy/network/api/s/default/stat/user/' . $mac, $cookie);
     }
 
     public function GetAccessDevices(string $mac) {
