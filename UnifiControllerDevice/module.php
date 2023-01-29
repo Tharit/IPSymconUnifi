@@ -125,7 +125,7 @@ class UnifiController extends IPSModule
         $this->SetValue("Connected", true);
         $script = $this->ReadPropertyInteger('script');
         if($script && @IPS_GetScript($script)) {
-            IPS_RunScriptEx($script, ["Data" => ["key" => "IPS_CONNECTED"]]);
+            IPS_RunScriptEx($script, ["Data" => json_encode(["key" => "IPS_CONNECTED"])]);
         }
     }
 
@@ -133,7 +133,7 @@ class UnifiController extends IPSModule
         $this->SetValue("Connected", false);
         $script = $this->ReadPropertyInteger('script');
         if($script && @IPS_GetScript($script)) {
-            IPS_RunScriptEx($script, ["Data" => ["key" => "IPS_DISCONNECTED"]]);
+            IPS_RunScriptEx($script, ["Data" => json_encode(["key" => "IPS_DISCONNECTED"])]);
         }
         return $this->ReadPropertyString('username') && $this->ReadPropertyString('password');
     }
