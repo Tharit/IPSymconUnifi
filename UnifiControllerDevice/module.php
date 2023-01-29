@@ -123,10 +123,18 @@ class UnifiController extends IPSModule
 
     protected function WSCOnConnect() {
         $this->SetValue("Connected", true);
+        $script = $this->ReadPropertyInteger('script');
+        if($script && @IPS_GetScript($script)) {
+            IPS_RunScriptEx($script, ["Data" => ["key" => "IPS_CONNECTED"]]);
+        }
     }
 
     protected function WSCOnDisconnect() {
         $this->SetValue("Connected", false);
+        $script = $this->ReadPropertyInteger('script');
+        if($script && @IPS_GetScript($script)) {
+            IPS_RunScriptEx($script, ["Data" => ["key" => "IPS_DISCONNECTED"]]);
+        }
         return $this->ReadPropertyString('username') && $this->ReadPropertyString('password');
     }
  
