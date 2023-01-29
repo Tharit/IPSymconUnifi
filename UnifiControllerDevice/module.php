@@ -155,6 +155,7 @@ class UnifiController extends IPSModule
     // external methods
     //------------------------------------------------------------------------------------
     public function GetClientDevice(string $mac) {
+        $this->RefreshToken();
         $parentID = $this->GetConnectionID();
         $ip = IPS_GetProperty($parentID, 'Host');
         $cookie = $this->MUGetBuffer('cookie');
@@ -163,6 +164,7 @@ class UnifiController extends IPSModule
     }
 
     public function GetAccessDevices(string $mac) {
+        $this->RefreshToken();
         $parentID = $this->GetConnectionID();
         $ip = IPS_GetProperty($parentID, 'Host');
         $cookie = $this->MUGetBuffer('cookie');
@@ -171,6 +173,7 @@ class UnifiController extends IPSModule
     }
 
     public function GetPortConfig() {
+        $this->RefreshToken();
         $parentID = $this->GetConnectionID();
         $ip = IPS_GetProperty($parentID, 'Host');
         $cookie = $this->MUGetBuffer('cookie');
@@ -179,6 +182,7 @@ class UnifiController extends IPSModule
     }
 
     public function SetDeviceSettingsBase(string $deviceId, string $payload) {
+        $this->RefreshToken();
         $parentID = $this->GetConnectionID();
         $ip = IPS_GetProperty($parentID, 'Host');
         $cookie = $this->MUGetBuffer('cookie');
@@ -189,6 +193,34 @@ class UnifiController extends IPSModule
     //------------------------------------------------------------------------------------
     // module internals
     //------------------------------------------------------------------------------------
+    private function RefreshToken() {
+        $cookie = $this->MUGetBuffer('cookie');
+        if(!$cookie) return;
+        $parts = explode('=', $cookie);
+        $token = $parts[1];
+
+        $parts = explode('.', $token);
+        $tokenData = json_decode(base64_decode($parts[1]), true);
+        $expiration = $tokenData['exp'];
+        $isValid = time() + 5 * 60 < $expiration;
+
+        if($isValid) return;
+        
+        $this->SendDebug('RefreshToken', 'Token expired');
+
+        $parentID = $this->GetConnectionID();
+        $ip = IPS_GetProperty($parentID, 'Host');
+        $username = $this->ReadPropertyString("username");
+        $password = $this->ReadPropertyString("password");
+        $res = $this->Login($ip, $username, $password);
+        if(!isset($res['cookie']) || $res['cookie'] === false) {
+            $this->WSCDisconnect();
+            return;
+        }
+        $this->MUSetBuffer('cookie', $res['cookie']);
+        $this->MUSetBuffer('x-csrf-token', $res['x-csrf-token']);
+    }
+
     private function ResetState() {
         $this->WSCResetState();
         $this->MUSetBuffer('cookie', '');
