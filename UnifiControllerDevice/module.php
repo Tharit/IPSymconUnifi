@@ -214,7 +214,7 @@ class UnifiController extends IPSModule
 
         if($isValid) return;
         
-        $this->SendDebug('RefreshToken', 'Token expired');
+        $this->SendDebug('RefreshToken', 'Token expired', 0);
 
         $parentID = $this->GetConnectionID();
         $ip = IPS_GetProperty($parentID, 'Host');
