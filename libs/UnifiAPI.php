@@ -53,7 +53,12 @@ trait UnifiAPI {
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(["username" => $username,"password" => $password]));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+            "username" => $username,
+            "password" => $password,
+            "token" => "",
+            "rememberMe" => false
+        ]));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
         curl_exec($ch);
