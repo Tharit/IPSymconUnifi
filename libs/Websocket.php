@@ -361,6 +361,7 @@ trait CustomWebSocketClient {
             }
         } else if($state === 2) {
             while (true) {
+                IPS_LogMessage('WSC Msg', bin2hex($data));
                 if (strlen($data) < 2) {
                     break;
                 }
