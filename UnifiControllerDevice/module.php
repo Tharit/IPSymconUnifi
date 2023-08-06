@@ -118,6 +118,7 @@ class UnifiController extends IPSModule
     }
 
     public function ReceiveData($data) {
+        return;
         $this->WSCReceiveData($data);
     }
 
