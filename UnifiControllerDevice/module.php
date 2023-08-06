@@ -67,18 +67,16 @@ class UnifiController extends IPSModule
         $parentID = $this->GetConnectionID();
 
         if (IPS_GetProperty($parentID, 'Open')) {
-            $this->WSCDisconnect(false);
-            //IPS_SetProperty($parentID, 'Open', false);
-            //@IPS_ApplyChanges($parentID);
+        // @TEST     $this->WSCDisconnect(false);
         }
 
         parent::ApplyChanges();
 
         if($this->ReadPropertyString('username') && $this->ReadPropertyString('password')) {
-            if (!IPS_GetProperty($parentID, 'Open')) {
-                IPS_SetProperty($parentID, 'Open', true);
-                @IPS_ApplyChanges($parentID);
-            }
+       // @TEST      if (!IPS_GetProperty($parentID, 'Open')) {
+        // @TEST         IPS_SetProperty($parentID, 'Open', true);
+        // @TEST         @IPS_ApplyChanges($parentID);
+        // @TEST     }
         }
     }
 
@@ -118,7 +116,7 @@ class UnifiController extends IPSModule
     }
 
     public function ReceiveData($data) {
-        return;
+      // @TEST   return;
         $this->WSCReceiveData($data);
     }
 
