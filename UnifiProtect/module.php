@@ -99,8 +99,6 @@ class UnifiProtect extends IPSModule
 
         if (IPS_GetProperty($parentID, 'Open')) {
             $this->WSCDisconnect(false);
-            //IPS_SetProperty($parentID, 'Open', false);
-            //@IPS_ApplyChanges($parentID);
         }
 
         parent::ApplyChanges();
@@ -149,6 +147,7 @@ class UnifiProtect extends IPSModule
     }
 
     public function ReceiveData($data) {
+        return;
         $this->MUSetBuffer('Bootstrapped', false);
         $this->WSCReceiveData($data);
     }
