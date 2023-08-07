@@ -271,7 +271,9 @@ trait CustomWebSocketClient {
                     $this->WSCResetState();
                 } else if($state > 0) {
                     // unexpected disconnect to be handled
+                    // notify handler & prepare for reconnect
                     $this->WSCOnDisconnect();
+                    $this->WSCResetState();
                 }
                 break;
         }
