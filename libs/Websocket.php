@@ -258,6 +258,7 @@ trait CustomWebSocketClient {
                 }
                 break;
             case IM_CHANGESTATUS:
+                $parentID = $this->GetConnectionID();
                 $this->SendDebug('CHANGESTATUS', json_encode($Data) . "|" . IPS_GetProperty($parentID, 'Open'), 0);
 
                 $state = $this->MUGetBuffer('State');
