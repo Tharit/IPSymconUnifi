@@ -277,6 +277,11 @@ trait CustomWebSocketClient {
                 if ($Data[0] === IS_ACTIVE) {
                     $this->MUSetBuffer('Attempt', min($this->MUGetBuffer('Attempt') + 1, 30));
 
+                    if($state == 4) {
+                        $this->WSCResetState();
+                        $state = 0;
+                    }
+
                     if($state == 0) {
                         $this->WSCOnReady();
                     }
