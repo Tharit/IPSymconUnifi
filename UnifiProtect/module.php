@@ -147,8 +147,21 @@ class UnifiProtect extends IPSModule
     }
 
     public function ReceiveData($data) {
-        trigger_error('FAILURE');
+        $parentID = $this->GetConnectionID();
+
+        $this->SendDebug('CLOSE', json_encode($Data), 0);
+
+        IPS_SetProperty($parentID, 'Open', false);
+        @IPS_ApplyChanges($parentID);
+        
+        $this->SendDebug('OPEN', json_encode($Data), 0);
+        IPS_SetProperty($parentID, 'Open', true);
+        @IPS_ApplyChanges($parentID);
+
+        $this->SendDebug('DONE', json_encode($Data), 0);
+
         return;
+
         $this->MUSetBuffer('Bootstrapped', false);
         $this->WSCReceiveData($data);
     }
