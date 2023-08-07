@@ -257,12 +257,10 @@ trait CustomWebSocketClient {
                 // skip if no change
                 if($Data[0] == $Data[1]) return;
 
-                $parentID = $this->GetConnectionID();
-                $isOpen = IPS_GetProperty($parentID, 'Open');
-                $this->SendDebug('CHANGESTATUS', json_encode($Data) . "|" . $isOpen, 0);
+                $this->SendDebug('CHANGESTATUS', json_encode($Data), 0);
 
                 $state = $this->MUGetBuffer('State');
-                if ($Data[0] === IS_ACTIVE && $isOpen) {
+                if ($Data[0] === IS_ACTIVE) {
                     if($state == 0) {
                         $this->WSCOnReady();
                     }
