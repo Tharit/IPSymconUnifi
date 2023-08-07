@@ -211,11 +211,11 @@ class UnifiProtect extends IPSModule
 
     public function RequestAction($ident, $value)
     {
+        $this->SendDebug('Action', $ident . ' | ' . $value, 0);
+        
         if($ident === 'WSC') {
             $this->WSCRequestAction($value);
         }
-
-        $this->SendDebug('Action', $ident . ' | ' . $value, 0);
     }
 
     //------------------------------------------------------------------------------------

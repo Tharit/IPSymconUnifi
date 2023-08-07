@@ -231,13 +231,15 @@ trait CustomWebSocketClient {
             $canReconnect = $value == 'Reconnect';
             $parentID = $this->GetConnectionID();
 
+            $this->SendDebug('CHANGESTATUS', json_encode($Data), 0);
+
+            $this->WSCResetState();
+            
             if (IPS_GetProperty($parentID, 'Open')) {
                 IPS_SetProperty($parentID, 'Open', false);
                 @IPS_ApplyChanges($parentID);
             }
             
-            $this->WSCResetState();
-    
             if($canReconnect && $this->WSCOnDisconnect()) {
                 IPS_SetProperty($parentID, 'Open', true);
                 @IPS_ApplyChanges($parentID);
@@ -256,7 +258,7 @@ trait CustomWebSocketClient {
                 }
                 break;
             case IM_CHANGESTATUS:
-                $this->SendDebug('CHANGESTATUS', json_encode($Data), 0);
+                $this->SendDebug('CHANGESTATUS', json_encode($Data) . "|" . IPS_GetProperty($parentID, 'Open'), 0);
 
                 $state = $this->MUGetBuffer('State');
                 if ($Data[0] === IS_ACTIVE) {
