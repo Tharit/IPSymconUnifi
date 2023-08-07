@@ -259,13 +259,12 @@ trait CustomWebSocketClient {
                 $this->SendDebug('CHANGESTATUS', json_encode($Data), 0);
 
                 $state = $this->MUGetBuffer('State');
-                if($state == 0) {
-                    // if parent became active: connect
-                    if ($Data[0] === IS_ACTIVE) {
+                if ($Data[0] === IS_ACTIVE) {
+                    if($state == 0) {
                         $this->WSCOnReady();
-                    } else {
-                        $this->WSCDisconnect();
                     }
+                } else if($state != 3) {
+                    $this->WSCDisconnect();
                 }
                 break;
         }
