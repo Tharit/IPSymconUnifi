@@ -228,17 +228,18 @@ trait CustomWebSocketClient {
             $this->WSCSend('Ping', WebSocketOPCode::ping);
             $this->MUSetBuffer('PingPending', true);
         } else if($state == 3) {
-            $canReconnect = $value == 'Reconnect';
             $parentID = $this->GetConnectionID();
 
             if (IPS_GetProperty($parentID, 'Open')) {
                 IPS_SetProperty($parentID, 'Open', false);
                 IPS_ApplyChanges($parentID);
             }
-            
-            IPS_Sleep(1000);
+        } else if($state == 4) {
+            $parentID = $this->GetConnectionID();
 
-            if($canReconnect && $this->WSCOnDisconnect()) {
+            $this->WSCResetState();
+
+            if (!IPS_GetProperty($parentID, 'Open')) {
                 IPS_SetProperty($parentID, 'Open', true);
                 IPS_ApplyChanges($parentID);
             }
@@ -259,16 +260,18 @@ trait CustomWebSocketClient {
                 // skip if no change
                 if($Data[0] == $Data[1]) return;
 
-                $this->SendDebug('CHANGESTATUS', json_encode($Data), 0);
-
                 $state = $this->MUGetBuffer('State');
+                
+                $this->SendDebug('CHANGESTATUS', 'New: ' . $Data[0] . " | Old: " . $Data[1] . " | State: " . $state, 0);
+
                 if ($Data[0] === IS_ACTIVE) {
                     if($state == 0) {
                         $this->WSCOnReady();
                     }
                 } else if($state == 3) {
                     // expected disconnect
-                    $this->WSCResetState();
+                    $this->MUSetBuffer('State', 4);
+                    IPS_RunScriptText('IPS_Sleep(1000); IPS_RequestAction(' . $this->InstanceID . ', "WSC", "Reconnect");');
                 } else if($state > 0) {
                     // unexpected disconnect to be handled
                     // notify handler & prepare for reconnect
@@ -328,9 +331,9 @@ trait CustomWebSocketClient {
         
         $attempt = $this->MUGetBuffer('Attempt');
 
-        $action = $canReconnect ? 'Reconnect' : 'Disconnect';
         $this->SendDebug('Disconnect', 'Scheduled in ' . $attempt . ' seconds...', 0);
-        IPS_RunScriptText('IPS_Sleep(' . ($attempt * 1000). '); IPS_RequestAction(' . $this->InstanceID . ', "WSC", "' . $action . '");');
+        $this->MUSetBuffer('CanReconnect', $canReconnect);
+        IPS_RunScriptText('IPS_Sleep(' . ($attempt * 1000). '); IPS_RequestAction(' . $this->InstanceID . ', "WSC", "Reconnect");');
     }
 
     protected function WSCReceiveData($data)
