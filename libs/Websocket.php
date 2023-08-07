@@ -233,12 +233,12 @@ trait CustomWebSocketClient {
 
             if (IPS_GetProperty($parentID, 'Open')) {
                 IPS_SetProperty($parentID, 'Open', false);
-                @IPS_ApplyChanges($parentID);
+                IPS_ApplyChanges($parentID);
             }
             
             if($canReconnect && $this->WSCOnDisconnect()) {
                 IPS_SetProperty($parentID, 'Open', true);
-                @IPS_ApplyChanges($parentID);
+                IPS_ApplyChanges($parentID);
             }
         }
     }
