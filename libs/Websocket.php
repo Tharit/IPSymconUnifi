@@ -275,6 +275,8 @@ trait CustomWebSocketClient {
                 $this->SendDebug('CHANGESTATUS', 'New: ' . $Data[0] . " | Old: " . $Data[1] . " | State: " . $state, 0);
 
                 if ($Data[0] === IS_ACTIVE) {
+                    $this->MUSetBuffer('Attempt', $this->MUGetBuffer('Attempt') + 1);
+
                     if($state == 0) {
                         $this->WSCOnReady();
                     }
@@ -306,8 +308,6 @@ trait CustomWebSocketClient {
      */
     protected function WSCConnect($ip, $path, $cookie)
     {
-        $this->MUSetBuffer('Attempt', $this->MUGetBuffer('Attempt') + 1);
-
         $SendKey = base64_encode(openssl_random_pseudo_bytes(16));
         $Key = base64_encode(sha1($SendKey . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11', true));
         $this->MUSetBuffer('HandshakeKey', $Key);
