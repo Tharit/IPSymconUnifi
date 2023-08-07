@@ -282,13 +282,20 @@ trait CustomWebSocketClient {
                     // expected disconnect
                     // can be triggered by RequestAction manually setting Open to false, OR by socket state change.. whichever happens first
                     // if both get triggered, that is also fine
-                    $this->MUSetBuffer('State', 4);
-                    IPS_RunScriptText('IPS_Sleep(1000); IPS_RequestAction(' . $this->InstanceID . ', "WSC", "Reconnect");');
+                    if($this->MUGetBuffer('CanReconnect')) {
+                        $this->MUSetBuffer('State', 4);
+                        IPS_RunScriptText('IPS_Sleep(1000); IPS_RequestAction(' . $this->InstanceID . ', "WSC", "Reconnect");');
+                    } else {
+                        $this->WSCResetState();
+                    }
                 } else if($state > 0) {
                     // unexpected disconnect to be handled
                     // notify handler & prepare for reconnect
-                    $this->WSCOnDisconnect();
+                    $canReconnect = $this->WSCOnDisconnect();
                     $this->WSCResetState();
+                    if(!$canReconnect) {
+                        $this->WSCDisconnect(false);
+                    }
                 }
                 break;
         }
