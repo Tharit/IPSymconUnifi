@@ -34,13 +34,6 @@ class UnifiController extends IPSModule
 
         // variables
         $this->RegisterVariableBoolean("Connected", "Connected");
-        /*
-        $this->RegisterVariableString("Application", "Application");
-        $this->RegisterVariableString("State", "State");
-        $this->RegisterVariableString("Title", "Title");
-        $this->RegisterVariableFloat("Volume", "Volume", "~Intensity.1");
-        $this->EnableAction("Volume");
-        */
 
         // messages
         $this->RegisterMessage(0, IPS_KERNELSTARTED);
@@ -55,7 +48,6 @@ class UnifiController extends IPSModule
         // if this is not the initial creation there might already be a parent
         if($this->UpdateConnection() && $this->HasActiveParent()) {
             $this->SendDebug('Module Create', 'Already connected', 0);
-            $this->Disconnect();
         }
     }
 
@@ -67,7 +59,8 @@ class UnifiController extends IPSModule
         $parentID = $this->GetConnectionID();
 
         if (IPS_GetProperty($parentID, 'Open')) {
-            $this->WSCDisconnect(false);
+            IPS_SetProperty($parentID, 'Open', false);
+            @IPS_ApplyChanges($parentID);
         }
 
         parent::ApplyChanges();
@@ -97,19 +90,6 @@ class UnifiController extends IPSModule
                 $this->ResetState();
                 $this->UpdateConnection();
                 break;
-            case IM_CHANGESTATUS:
-                // reset state
-                $this->ResetState();
-
-                $this->SendDebug('CHANGESTATUS', json_encode($Data), 0);
-
-                // if parent became active: connect
-                if ($Data[0] === IS_ACTIVE) {
-                    $this->Connect();
-                } else {
-                    $this->SetValue("Connected", false);
-                }
-                break;
             default:
                 break;
         }
@@ -117,6 +97,12 @@ class UnifiController extends IPSModule
 
     public function ReceiveData($data) {
         $this->WSCReceiveData($data);
+    }
+
+    protected function WSCOnReady() {
+        // reset state
+        $this->ResetState();
+        $this->Connect();
     }
 
     protected function WSCOnConnect() {
@@ -128,6 +114,7 @@ class UnifiController extends IPSModule
     }
 
     protected function WSCOnDisconnect() {
+        $this->ResetState();
         $this->SetValue("Connected", false);
         $script = $this->ReadPropertyInteger('script');
         if($script && @IPS_GetScript($script)) {
@@ -150,11 +137,11 @@ class UnifiController extends IPSModule
 
     public function RequestAction($ident, $value)
     {
+        $this->SendDebug('Action', $ident . ' | ' . $value, 0);
+        
         if($ident === 'WSC') {
             $this->WSCRequestAction($value);
         }
-
-        $this->SendDebug('Action', $ident, 0);
     }
 
     //------------------------------------------------------------------------------------
@@ -228,14 +215,13 @@ class UnifiController extends IPSModule
     }
 
     private function ResetState() {
-        $this->WSCResetState();
         $this->MUSetBuffer('cookie', '');
         $this->MUSetBuffer('x-csrf-token', '');
     }
 
     private function Connect() {
         if($this->WSCGetState() != 0) {
-            IPS_LogMessage('WSC', 'Tried to connect while already connected');
+            IPS_LogMessage('Unifi Controller', 'Tried to connect while already connected');
             return;
         }
         $parentID = $this->GetConnectionID();

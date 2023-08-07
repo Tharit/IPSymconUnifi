@@ -188,10 +188,14 @@ trait CustomWebSocketClient {
     protected function WSCCreate() {
         $this->RegisterTimer("PingTimer", 45000, 'IPS_RequestAction($_IPS["TARGET"], "WSC", "PingTimer");');
         $this->RegisterMessage(0, IPS_KERNELSHUTDOWN);
+
+        $this->MUSetBuffer('Attempt', 0);
+        $this->WSCResetState();
     }
 
     protected function WSCResetState() {
         $this->SetReceiveDataFilter('');
+        
         $this->MUSetBuffer('Data', '');
         $this->MUSetBuffer('State', 0);
         $this->MUSetBuffer('PayloadType', 0);
@@ -212,16 +216,43 @@ trait CustomWebSocketClient {
     }
 
     protected function WSCRequestAction($value) {
-        if($this->MUGetBuffer('State') === 2) {
-            $isPingPending = $this->MUGetBuffer('PingPending');
-            if($isPingPending) {
-                $this->WSCDisconnect();
-                trigger_error("Ping timeout", E_USER_NOTICE);
-                return;
-            }
+        $state = $this->MUGetBuffer('State');
+        switch($value) {
+            case 'PingTimer':
+                if($state == 2) {
+                    $isPingPending = $this->MUGetBuffer('PingPending');
+                    if($isPingPending) {
+                        $this->WSCDisconnect();
+                        trigger_error("Ping timeout", E_USER_NOTICE);
+                        return;
+                    }
 
-            $this->WSCSend('Ping', WebSocketOPCode::ping);
-            $this->MUSetBuffer('PingPending', true);
+                    $this->WSCSend('Ping', WebSocketOPCode::ping);
+                    $this->MUSetBuffer('PingPending', true);
+                }
+                break;
+            case 'Reconnect':
+                if($state == 3) {
+                    $this->SendDebug('WSC Action', "State: " . $state, 0);
+                    $parentID = $this->GetConnectionID();
+
+                    if (IPS_GetProperty($parentID, 'Open')) {
+                        IPS_SetProperty($parentID, 'Open', false);
+                        IPS_ApplyChanges($parentID);
+                    }
+                } else if($state == 4) {
+                    $this->SendDebug('WSC Action', "State: " . $state, 0);
+
+                    $parentID = $this->GetConnectionID();
+
+                    $this->WSCResetState();
+
+                    if (!IPS_GetProperty($parentID, 'Open')) {
+                        IPS_SetProperty($parentID, 'Open', true);
+                        IPS_ApplyChanges($parentID);
+                    }
+                }
+                break;
         }
     }
 
@@ -232,6 +263,45 @@ trait CustomWebSocketClient {
                 if (IPS_GetProperty($parentID, 'Open')) {
                     if($this->MUGetBuffer('State') === 2) {
                         $this->WSCSend('', WebSocketOPCode::close);
+                    }
+                }
+                break;
+            case IM_CHANGESTATUS:
+                // skip if no change
+                if($Data[0] == $Data[1]) return;
+
+                $state = $this->MUGetBuffer('State');
+                
+                $this->SendDebug('CHANGESTATUS', 'New: ' . $Data[0] . " | Old: " . $Data[1] . " | State: " . $state, 0);
+
+                if ($Data[0] === IS_ACTIVE) {
+                    $this->MUSetBuffer('Attempt', min($this->MUGetBuffer('Attempt') + 1, 30));
+
+                    if($state == 4) {
+                        $this->WSCResetState();
+                        $state = 0;
+                    }
+
+                    if($state == 0) {
+                        $this->WSCOnReady();
+                    }
+                } else if($state == 3) {
+                    // expected disconnect
+                    // can be triggered by RequestAction manually setting Open to false, OR by socket state change.. whichever happens first
+                    // if both get triggered, that is also fine
+                    if($this->MUGetBuffer('CanReconnect')) {
+                        $this->MUSetBuffer('State', 4);
+                        IPS_RunScriptText('IPS_Sleep(1000); IPS_RequestAction(' . $this->InstanceID . ', "WSC", "Reconnect");');
+                    } else {
+                        $this->WSCResetState();
+                    }
+                } else if($state > 0) {
+                    // unexpected disconnect to be handled
+                    // notify handler & prepare for reconnect
+                    $canReconnect = $this->WSCOnDisconnect();
+                    $this->WSCResetState();
+                    if(!$canReconnect) {
+                        $this->WSCDisconnect(false);
                     }
                 }
                 break;
@@ -273,20 +343,26 @@ trait CustomWebSocketClient {
     } 
 
     protected function WSCDisconnect($canReconnect = true) {
+        $this->SendDebug('Disconnect', 'Requested disconnect...', 0);
+
         $parentID = $this->GetConnectionID();
-        if (!IPS_GetProperty($parentID, 'Open')) {
+
+        if(!IPS_GetProperty($parentID, 'Open')) {
+            $this->WSCResetState();
             return;
         }
+
         if($this->MUGetBuffer('State') === 2) {
             $this->WSCSend('', WebSocketOPCode::close);
         }
-        IPS_SetProperty($parentID, 'Open', false);
-        @IPS_ApplyChanges($parentID);
+        
+        $this->MUSetBuffer('State', 3);
+        
+        $attempt = $this->MUGetBuffer('Attempt');
 
-        if($canReconnect && $this->WSCOnDisconnect()) {
-            IPS_SetProperty($parentID, 'Open', true);
-            @IPS_ApplyChanges($parentID);
-        }
+        $this->SendDebug('Disconnect', 'Scheduled in ' . $attempt . ' seconds...', 0);
+        $this->MUSetBuffer('CanReconnect', $canReconnect);
+        IPS_RunScriptText('IPS_Sleep(' . ($attempt * 1000). '); IPS_RequestAction(' . $this->InstanceID . ', "WSC", "Reconnect");');
     }
 
     protected function WSCReceiveData($data)
@@ -301,7 +377,6 @@ trait CustomWebSocketClient {
         if($state === 0) {
             $this->SendDebug('Error', 'Unexpected data received while connecting', 0);
             $this->WSCDisconnect();
-            //trigger_error($exc->getMessage(), E_USER_NOTICE);
             return;
         } else if($state === 1) {
             try {
@@ -341,6 +416,7 @@ trait CustomWebSocketClient {
                     }
                     $this->MUSetBuffer('Data', '');
                     $this->MUSetBuffer('State', 2);
+                    $this->MUGetBuffer('Attempt', 0);
                     $this->WSCOnConnect();
 
                     $filter = $this->MUGetBuffer('WSCReceiveDataFilter');
@@ -372,6 +448,9 @@ trait CustomWebSocketClient {
                 $Frame->Tail = null;
                 $this->WSCDecodeFrame($Frame);
             }
+        } else if($state === 3) {
+            $this->SendDebug('Warning', 'Unexpected data received after sending close packet', 0);
+            return;
         }
 
         if(strlen($data) > 1024 * 1024) {

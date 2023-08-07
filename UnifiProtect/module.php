@@ -67,13 +67,6 @@ class UnifiProtect extends IPSModule
 
         // variables
         $this->RegisterVariableBoolean("Connected", "Connected");
-        /*
-        $this->RegisterVariableString("Application", "Application");
-        $this->RegisterVariableString("State", "State");
-        $this->RegisterVariableString("Title", "Title");
-        $this->RegisterVariableFloat("Volume", "Volume", "~Intensity.1");
-        $this->EnableAction("Volume");
-        */
 
         // messages
         $this->RegisterMessage(0, IPS_KERNELSTARTED);
@@ -86,7 +79,6 @@ class UnifiProtect extends IPSModule
         // if this is not the initial creation there might already be a parent
         if($this->UpdateConnection() && $this->HasActiveParent()) {
             $this->SendDebug('Module Create', 'Already connected', 0);
-            $this->Disconnect();
         }
     }
 
@@ -98,7 +90,8 @@ class UnifiProtect extends IPSModule
         $parentID = $this->GetConnectionID();
 
         if (IPS_GetProperty($parentID, 'Open')) {
-            $this->WSCDisconnect(false);
+            IPS_SetProperty($parentID, 'Open', false);
+            @IPS_ApplyChanges($parentID);
         }
 
         parent::ApplyChanges();
@@ -128,26 +121,12 @@ class UnifiProtect extends IPSModule
                 $this->ResetState();
                 $this->UpdateConnection();
                 break;
-            case IM_CHANGESTATUS:
-                // reset state
-                $this->ResetState();
-
-                $this->SendDebug('CHANGESTATUS', json_encode($Data), 0);
-
-                // if parent became active: connect
-                if ($Data[0] === IS_ACTIVE) {
-                    $this->Connect();
-                } else {
-                    $this->SetValue("Connected", false);
-                }
-                break;
             default:
                 break;
         }
     }
 
     public function ReceiveData($data) {
-        $this->MUSetBuffer('Bootstrapped', false);
         $this->WSCReceiveData($data);
     }
 
@@ -165,11 +144,17 @@ class UnifiProtect extends IPSModule
         }
     }
 
+    protected function WSCOnReady() {
+        $this->ResetState();
+        $this->Connect();
+    }
+
     protected function WSCOnConnect() {
         $this->SetValue("Connected", true);
     }
 
     protected function WSCOnDisconnect() {
+        $this->ResetState();
         $this->SetValue("Connected", false);
         return $this->ReadPropertyString('username') && $this->ReadPropertyString('password');
     }
@@ -211,38 +196,18 @@ class UnifiProtect extends IPSModule
                 "DataID" => "{E2D9573A-39CC-49AC-A2AA-FB7A619A7970}",
                 "Buffer" => json_encode(["id" => $actionJSON['id'], "data" => $dataJSON])
             ]));
-            /*
-            if($actionJSON['action'] === 'add' && $actionJSON['modelKey'] === 'event') {
-
-                // ring events
-                if($dataJSON['type'] === 'ring') {
-                    $this->SendDebug('Ring', $dataJSON['camera'], 0);
-                }
-
-            }
-            */
         } else {
             $this->SendDebug('data', $action . ' ' . $data, 0);
         }
-
-        /*
-        $script = $this->ReadPropertyInteger('script');
-        if($script && @IPS_GetScript($script)) {
-            $data = @json_decode($data, true);
-            if($data != null && isset($data['data'])) {
-                IPS_RunScriptEx($script, ["Data" => json_encode($data['data'])]);
-            }
-        }
-        */
     }
 
     public function RequestAction($ident, $value)
     {
+        $this->SendDebug('Action', $ident . ' | ' . $value, 0);
+        
         if($ident === 'WSC') {
             $this->WSCRequestAction($value);
         }
-
-        $this->SendDebug('Action', $ident, 0);
     }
 
     //------------------------------------------------------------------------------------
@@ -254,7 +219,6 @@ class UnifiProtect extends IPSModule
     // module internals
     //------------------------------------------------------------------------------------
     private function ResetState() {
-        $this->WSCResetState();
     }
 
     private function Bootstrap() {
@@ -285,8 +249,6 @@ class UnifiProtect extends IPSModule
             ]));
         }
 
-        $this->MUSetBuffer('Bootstrapped', true);
-
         return [
             "ip" => $ip,
             "cookie" => $cookie,
@@ -296,7 +258,7 @@ class UnifiProtect extends IPSModule
 
     private function Connect() {
         if($this->WSCGetState() != 0) {
-            IPS_LogMessage('WSC', 'Tried to connect while already connected');
+            IPS_LogMessage('Unifi Protect', 'Tried to connect while already connected');
             return;
         }
 
