@@ -149,7 +149,7 @@ class UnifiController extends IPSModule
             $this->WSCRequestAction($value);
         }
 
-        $this->SendDebug('Action', $ident, 0);
+        $this->SendDebug('Action', $ident . ' | ' . $value, 0);
     }
 
     //------------------------------------------------------------------------------------

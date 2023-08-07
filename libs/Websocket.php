@@ -313,6 +313,7 @@ trait CustomWebSocketClient {
         
         if (!IPS_GetProperty($parentID, 'Open')) {
             $this->WSCResetState();
+            $this->WSCOnReady();
             return;
         }
         
@@ -325,6 +326,7 @@ trait CustomWebSocketClient {
         $attempt = $this->MUGetBuffer('Attempt');
 
         $action = $canReconnect ? 'Reconnect' : 'Disconnect';
+        $this->SendDebug('Disconnect', 'Scheduled in ' . $attempt . ' seconds...', 0);
         IPS_RunScriptText('IPS_Sleep(' . ($attempt * 1000). '); IPS_RequestAction($_IPS["TARGET"], "WSC", "' . $action . '");');
     }
 
