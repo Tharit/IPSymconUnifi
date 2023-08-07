@@ -275,7 +275,7 @@ trait CustomWebSocketClient {
                 $this->SendDebug('CHANGESTATUS', 'New: ' . $Data[0] . " | Old: " . $Data[1] . " | State: " . $state, 0);
 
                 if ($Data[0] === IS_ACTIVE) {
-                    $this->MUSetBuffer('Attempt', $this->MUGetBuffer('Attempt') + 1);
+                    $this->MUSetBuffer('Attempt', min($this->MUGetBuffer('Attempt') + 1, 30));
 
                     if($state == 0) {
                         $this->WSCOnReady();
