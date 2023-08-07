@@ -266,7 +266,7 @@ class UnifiProtect extends IPSModule
 
     private function Connect() {
         if($this->WSCGetState() != 0) {
-            IPS_LogMessage('WSC', 'Tried to connect while already connected');
+            IPS_LogMessage('Unifi Protect', 'Tried to connect while already connected');
             return;
         }
 

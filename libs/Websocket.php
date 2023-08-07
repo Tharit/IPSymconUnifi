@@ -308,9 +308,12 @@ trait CustomWebSocketClient {
     } 
 
     protected function WSCDisconnect($canReconnect = true) {
+        $this->SendDebug('Disconnect', 'Requested disconnect...', 0);
+
         $parentID = $this->GetConnectionID();
         
         if (!IPS_GetProperty($parentID, 'Open')) {
+            $this->WSCResetState();
             return;
         }
         
