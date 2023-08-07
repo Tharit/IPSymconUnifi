@@ -269,7 +269,11 @@ class UnifiProtect extends IPSModule
         $this->WSCConnect($bootstrap['ip'], $path, $bootstrap['cookie']);
     }
 
-    public function Disconnect() {
+    public function Test() {
+        $this->SetStatus(200);
+    }
+
+    private function Disconnect() {
         $canReconnect = $this->ReadPropertyString('username') && $this->ReadPropertyString('password');
         $this->WSCDisconnect($canReconnect);
     }
