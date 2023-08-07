@@ -231,16 +231,10 @@ trait CustomWebSocketClient {
             $canReconnect = $value == 'Reconnect';
             $parentID = $this->GetConnectionID();
 
-            $this->SendDebug('Disconnect', 'Disconnecting', 0);
-
-            $this->WSCResetState();
-            
             if (IPS_GetProperty($parentID, 'Open')) {
                 IPS_SetProperty($parentID, 'Open', false);
                 @IPS_ApplyChanges($parentID);
             }
-
-            $this->SendDebug('Disconnect', 'Reconnecting', 0);
             
             if($canReconnect && $this->WSCOnDisconnect()) {
                 IPS_SetProperty($parentID, 'Open', true);
@@ -261,14 +255,19 @@ trait CustomWebSocketClient {
                 break;
             case IM_CHANGESTATUS:
                 $parentID = $this->GetConnectionID();
-                $this->SendDebug('CHANGESTATUS', json_encode($Data) . "|" . IPS_GetProperty($parentID, 'Open'), 0);
+                $isOpen = IPS_GetProperty($parentID, 'Open');
+                $this->SendDebug('CHANGESTATUS', json_encode($Data) . "|" . $isOpen, 0);
 
                 $state = $this->MUGetBuffer('State');
-                if ($Data[0] === IS_ACTIVE) {
+                if ($Data[0] === IS_ACTIVE && $isOpen) {
                     if($state == 0) {
                         $this->WSCOnReady();
                     }
-                } else if($state != 3) {
+                } else if($state == 3) {
+                    // expected disconnect
+                    $this->WSCResetState();
+                } else {
+                    // unexpected disconnect to be handled
                     $this->WSCDisconnect();
                 }
                 break;
@@ -320,12 +319,12 @@ trait CustomWebSocketClient {
             return;
         }
         
+        $this->MUSetBuffer('State', 3);
+
         if($this->MUGetBuffer('State') === 2) {
             $this->WSCSend('', WebSocketOPCode::close);
         }
-        
-        $this->MUSetBuffer('State', 3);
-
+                
         $attempt = $this->MUGetBuffer('Attempt');
 
         $action = $canReconnect ? 'Reconnect' : 'Disconnect';
