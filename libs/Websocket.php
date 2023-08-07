@@ -189,7 +189,7 @@ trait CustomWebSocketClient {
         $this->RegisterTimer("PingTimer", 45000, 'IPS_RequestAction($_IPS["TARGET"], "WSC", "PingTimer");');
         $this->RegisterMessage(0, IPS_KERNELSHUTDOWN);
 
-        $this->MUGetBuffer('Attempt', 0);
+        $this->MUSetBuffer('Attempt', 0);
         $this->WSCResetState();
     }
 
