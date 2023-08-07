@@ -254,6 +254,9 @@ trait CustomWebSocketClient {
                 }
                 break;
             case IM_CHANGESTATUS:
+                // skip if no change
+                if($Data[0] == $Data[1]) return;
+
                 $parentID = $this->GetConnectionID();
                 $isOpen = IPS_GetProperty($parentID, 'Open');
                 $this->SendDebug('CHANGESTATUS', json_encode($Data) . "|" . $isOpen, 0);
@@ -266,7 +269,7 @@ trait CustomWebSocketClient {
                 } else if($state == 3) {
                     // expected disconnect
                     $this->WSCResetState();
-                } else {
+                } else if($state > 0) {
                     // unexpected disconnect to be handled
                     $this->WSCDisconnect();
                 }
