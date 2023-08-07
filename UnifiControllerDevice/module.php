@@ -34,13 +34,6 @@ class UnifiController extends IPSModule
 
         // variables
         $this->RegisterVariableBoolean("Connected", "Connected");
-        /*
-        $this->RegisterVariableString("Application", "Application");
-        $this->RegisterVariableString("State", "State");
-        $this->RegisterVariableString("Title", "Title");
-        $this->RegisterVariableFloat("Volume", "Volume", "~Intensity.1");
-        $this->EnableAction("Volume");
-        */
 
         // messages
         $this->RegisterMessage(0, IPS_KERNELSTARTED);

@@ -334,9 +334,14 @@ trait CustomWebSocketClient {
         $this->SendDebug('Disconnect', 'Requested disconnect...', 0);
 
         $parentID = $this->GetConnectionID();
-        
-        if($this->MUGetBuffer('State') === 2 && IPS_GetProperty($parentID, 'Open')) {
-            //$this->WSCSend('', WebSocketOPCode::close);
+
+        if(!IPS_GetProperty($parentID, 'Open')) {
+            $this->WSCResetState();
+            return;
+        }
+
+        if($this->MUGetBuffer('State') === 2) {
+            $this->WSCSend('', WebSocketOPCode::close);
         }
         
         $this->MUSetBuffer('State', 3);
