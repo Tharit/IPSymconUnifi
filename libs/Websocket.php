@@ -228,6 +228,7 @@ trait CustomWebSocketClient {
             $this->WSCSend('Ping', WebSocketOPCode::ping);
             $this->MUSetBuffer('PingPending', true);
         } else if($state == 3) {
+            $this->SendDebug('WSC Action', "State: " . $state, 0);
             $parentID = $this->GetConnectionID();
 
             if (IPS_GetProperty($parentID, 'Open')) {
@@ -235,6 +236,8 @@ trait CustomWebSocketClient {
                 IPS_ApplyChanges($parentID);
             }
         } else if($state == 4) {
+            $this->SendDebug('WSC Action', "State: " . $state, 0);
+
             $parentID = $this->GetConnectionID();
 
             $this->WSCResetState();
@@ -420,7 +423,7 @@ trait CustomWebSocketClient {
                 $this->WSCDecodeFrame($Frame);
             }
         } else if($state === 3) {
-            $this->SendDebug('Error', 'Unexpected data received after sending close packet', 0);
+            $this->SendDebug('Warning', 'Unexpected data received after sending close packet', 0);
             return;
         }
 
