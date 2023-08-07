@@ -312,8 +312,6 @@ trait CustomWebSocketClient {
         $parentID = $this->GetConnectionID();
         
         if (!IPS_GetProperty($parentID, 'Open')) {
-            $this->WSCResetState();
-            $this->WSCOnReady();
             return;
         }
         
