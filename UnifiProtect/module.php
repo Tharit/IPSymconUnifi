@@ -147,6 +147,8 @@ class UnifiProtect extends IPSModule
     }
 
     public function ReceiveData($data) {
+        trigger_error('FAILURE');
+        return;
         $this->MUSetBuffer('Bootstrapped', false);
         $this->WSCReceiveData($data);
     }
