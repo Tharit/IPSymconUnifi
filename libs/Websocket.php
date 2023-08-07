@@ -236,7 +236,7 @@ trait CustomWebSocketClient {
                 @IPS_ApplyChanges($parentID);
             }
             
-            $this->ResetState();
+            $this->WSCResetState();
     
             if($canReconnect && $this->WSCOnDisconnect()) {
                 IPS_SetProperty($parentID, 'Open', true);
