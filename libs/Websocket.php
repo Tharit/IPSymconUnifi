@@ -217,35 +217,42 @@ trait CustomWebSocketClient {
 
     protected function WSCRequestAction($value) {
         $state = $this->MUGetBuffer('State');
-        if($state == 2) {
-            $isPingPending = $this->MUGetBuffer('PingPending');
-            if($isPingPending) {
-                $this->WSCDisconnect();
-                trigger_error("Ping timeout", E_USER_NOTICE);
-                return;
-            }
+        switch($value) {
+            case 'PingTimer':
+                if($state == 2) {
+                    $isPingPending = $this->MUGetBuffer('PingPending');
+                    if($isPingPending) {
+                        $this->WSCDisconnect();
+                        trigger_error("Ping timeout", E_USER_NOTICE);
+                        return;
+                    }
 
-            $this->WSCSend('Ping', WebSocketOPCode::ping);
-            $this->MUSetBuffer('PingPending', true);
-        } else if($state == 3) {
-            $this->SendDebug('WSC Action', "State: " . $state, 0);
-            $parentID = $this->GetConnectionID();
+                    $this->WSCSend('Ping', WebSocketOPCode::ping);
+                    $this->MUSetBuffer('PingPending', true);
+                }
+                break;
+            case 'Reconnect':
+                if($state == 3) {
+                    $this->SendDebug('WSC Action', "State: " . $state, 0);
+                    $parentID = $this->GetConnectionID();
 
-            if (IPS_GetProperty($parentID, 'Open')) {
-                IPS_SetProperty($parentID, 'Open', false);
-                IPS_ApplyChanges($parentID);
-            }
-        } else if($state == 4) {
-            $this->SendDebug('WSC Action', "State: " . $state, 0);
+                    if (IPS_GetProperty($parentID, 'Open')) {
+                        IPS_SetProperty($parentID, 'Open', false);
+                        IPS_ApplyChanges($parentID);
+                    }
+                } else if($state == 4) {
+                    $this->SendDebug('WSC Action', "State: " . $state, 0);
 
-            $parentID = $this->GetConnectionID();
+                    $parentID = $this->GetConnectionID();
 
-            $this->WSCResetState();
+                    $this->WSCResetState();
 
-            if (!IPS_GetProperty($parentID, 'Open')) {
-                IPS_SetProperty($parentID, 'Open', true);
-                IPS_ApplyChanges($parentID);
-            }
+                    if (!IPS_GetProperty($parentID, 'Open')) {
+                        IPS_SetProperty($parentID, 'Open', true);
+                        IPS_ApplyChanges($parentID);
+                    }
+                }
+                break;
         }
     }
 
@@ -273,6 +280,8 @@ trait CustomWebSocketClient {
                     }
                 } else if($state == 3) {
                     // expected disconnect
+                    // can be triggered by RequestAction manually setting Open to false, OR by socket state change.. whichever happens first
+                    // if both get triggered, that is also fine
                     $this->MUSetBuffer('State', 4);
                     IPS_RunScriptText('IPS_Sleep(1000); IPS_RequestAction(' . $this->InstanceID . ', "WSC", "Reconnect");');
                 } else if($state > 0) {
