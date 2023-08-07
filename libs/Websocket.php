@@ -309,6 +309,8 @@ trait CustomWebSocketClient {
     } 
 
     protected function WSCDisconnect($canReconnect = true) {
+        $parentID = $this->GetConnectionID();
+        
         if (!IPS_GetProperty($parentID, 'Open')) {
             return;
         }
