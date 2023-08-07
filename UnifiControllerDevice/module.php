@@ -229,7 +229,7 @@ class UnifiController extends IPSModule
 
     private function Connect() {
         if($this->WSCGetState() != 0) {
-            IPS_LogMessage('WSC', 'Tried to connect while already connected');
+            IPS_LogMessage('Unifi Controller', 'Tried to connect while already connected');
             return;
         }
         $parentID = $this->GetConnectionID();
