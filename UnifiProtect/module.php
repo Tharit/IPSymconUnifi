@@ -86,7 +86,6 @@ class UnifiProtect extends IPSModule
         // if this is not the initial creation there might already be a parent
         if($this->UpdateConnection() && $this->HasActiveParent()) {
             $this->SendDebug('Module Create', 'Already connected', 0);
-            $this->Disconnect();
         }
     }
 
