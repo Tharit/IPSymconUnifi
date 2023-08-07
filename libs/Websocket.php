@@ -336,7 +336,7 @@ trait CustomWebSocketClient {
         $parentID = $this->GetConnectionID();
         
         if($this->MUGetBuffer('State') === 2 && IPS_GetProperty($parentID, 'Open')) {
-            $this->WSCSend('', WebSocketOPCode::close);
+            //$this->WSCSend('', WebSocketOPCode::close);
         }
         
         $this->MUSetBuffer('State', 3);
