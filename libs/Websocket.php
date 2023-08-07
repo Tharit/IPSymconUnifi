@@ -316,16 +316,12 @@ trait CustomWebSocketClient {
 
         $parentID = $this->GetConnectionID();
         
-        if (!IPS_GetProperty($parentID, 'Open')) {
-            return;
+        if($this->MUGetBuffer('State') === 2 && IPS_GetProperty($parentID, 'Open')) {
+            $this->WSCSend('', WebSocketOPCode::close);
         }
         
         $this->MUSetBuffer('State', 3);
-
-        if($this->MUGetBuffer('State') === 2) {
-            $this->WSCSend('', WebSocketOPCode::close);
-        }
-                
+        
         $attempt = $this->MUGetBuffer('Attempt');
 
         $action = $canReconnect ? 'Reconnect' : 'Disconnect';
