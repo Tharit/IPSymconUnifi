@@ -327,7 +327,7 @@ trait CustomWebSocketClient {
 
         $action = $canReconnect ? 'Reconnect' : 'Disconnect';
         $this->SendDebug('Disconnect', 'Scheduled in ' . $attempt . ' seconds...', 0);
-        IPS_RunScriptText('IPS_Sleep(' . ($attempt * 1000). '); IPS_RequestAction($_IPS["TARGET"], "WSC", "' . $action . '");');
+        IPS_RunScriptText('IPS_Sleep(' . ($attempt * 1000). '); IPS_RequestAction(' . $this->InstanceID . ', "WSC", "' . $action . '");');
     }
 
     protected function WSCReceiveData($data)
