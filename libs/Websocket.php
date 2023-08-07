@@ -236,6 +236,8 @@ trait CustomWebSocketClient {
                 IPS_ApplyChanges($parentID);
             }
             
+            IPS_Sleep(1000);
+
             if($canReconnect && $this->WSCOnDisconnect()) {
                 IPS_SetProperty($parentID, 'Open', true);
                 IPS_ApplyChanges($parentID);
@@ -269,7 +271,7 @@ trait CustomWebSocketClient {
                     $this->WSCResetState();
                 } else if($state > 0) {
                     // unexpected disconnect to be handled
-                    $this->WSCDisconnect();
+                    $this->WSCOnDisconnect();
                 }
                 break;
         }
