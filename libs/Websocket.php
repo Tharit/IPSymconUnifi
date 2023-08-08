@@ -252,6 +252,8 @@ trait CustomWebSocketClient {
                         IPS_ApplyChanges($parentID);
                     }
                 }
+                // could be that state is 0-2 here, if connection got reestablished before 
+                // the timer triggered.. in that case doing nothing is fine!
                 break;
         }
     }
@@ -277,11 +279,26 @@ trait CustomWebSocketClient {
                 if ($Data[0] === IS_ACTIVE) {
                     $this->MUSetBuffer('Attempt', min($this->MUGetBuffer('Attempt') + 1, 30));
 
-                    if($state == 4) {
+                    // state 3: check if we actually wanted to reconnect
+                    if($state == 3 && !$this->MUGetBuffer('CanReconnect')) {
+                        $this->WSCDisconnect(false);
+                    }
+                    
+                    // state 3: if connect event arrives before disconnect event
+                    // if disconnect even comes after the connection will again be closed by us.. but that's fine..
+                    // state 4: if connection is automatically opened before our timer
+                    if($state == 3 || $state == 4) {
                         $this->WSCResetState();
                         $state = 0;
                     }
 
+                    // state 1 or 2: this should never happen, and indicates some state mixup
+                    if($state == 1 || $state == 2) {
+                        $this->SendDebug('CHANGESTATUS', 'States out of sync, disconnecting...', 0);
+                        $this->WSCDisconnect();
+                    }
+
+                    // ultimately, state should always be zero here at the end
                     if($state == 0) {
                         $this->WSCOnReady();
                     }
