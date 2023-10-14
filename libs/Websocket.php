@@ -223,7 +223,7 @@ trait CustomWebSocketClient {
                     $isPingPending = $this->MUGetBuffer('PingPending');
                     if($isPingPending) {
                         $this->WSCDisconnect();
-                        trigger_error("Ping timeout", E_USER_NOTICE);
+                        //trigger_error("Ping timeout", E_USER_NOTICE);
                         return;
                     }
 
