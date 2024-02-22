@@ -206,7 +206,7 @@ class UnifiController extends IPSModule
         $username = $this->ReadPropertyString("username");
         $password = $this->ReadPropertyString("password");
         $res = $this->Login($ip, $username, $password);
-        if(!isset($res['cookie']) || $res['cookie'] === false) {
+        if($res === false || !isset($res['cookie']) || $res['cookie'] === false) {
             $this->WSCDisconnect();
             return;
         }

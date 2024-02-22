@@ -402,7 +402,7 @@ trait CustomWebSocketClient {
 
                     if (preg_match("/HTTP\/1.1 (\d{3}) /", $data, $match)) {
                         if ((int) $match[1] != 101) {
-                            throw new Exception(HTTP_ERROR_CODES::ToString((int) $match[1]));
+                            throw new Exception('HTTP ' . $match[1]);
                         }
                     } else {
                         throw new Exception("Incomplete handshake response received");
