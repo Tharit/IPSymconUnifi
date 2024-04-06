@@ -82,10 +82,11 @@ class UnifiProtectCamera extends IPSModule
                 $this->SetValue('LastMotion', round($data['lastMotion']/1000));
             }
         }
-        if(isset($data['isConnected'])) {
+        if(isset($data['state'])) {
             $value = $this->GetValue('Connected');
-            if($value != $data['isConnected']) {
-                $this->SetValue('Connected', $data['isConnected']);
+            $newValue = ($data['state'] == 'CONNECTED');
+            if($value != $newValue) {
+                $this->SetValue('Connected', $newValue);
             }
         }
         if(isset($data['isMotionDetected'])) {
