@@ -16,6 +16,7 @@ class UnifiProtectCamera extends IPSModule
         $this->RegisterPropertyString('uuid', '');
 
         // variables
+        $this->RegisterVariableInteger("Connected", "Connected");
         $this->RegisterVariableInteger("LastMotion", "Last Motion", "~UnixTimestamp");
         $this->RegisterVariableBoolean("IsMotionDetected", "Is Motion Detected", "~Motion");
         $this->RegisterVariableBoolean("IsSmartDetected", "Is Smart Detected", "~Motion");
@@ -79,6 +80,12 @@ class UnifiProtectCamera extends IPSModule
             $value = $this->GetValue('LastMotion');
             if($value != $data['lastMotion']) {
                 $this->SetValue('LastMotion', round($data['lastMotion']/1000));
+            }
+        }
+        if(isset($data['isConnected'])) {
+            $value = $this->GetValue('Connected');
+            if($value != $data['isConnected']) {
+                $this->SetValue('Connected', $data['isConnected']);
             }
         }
         if(isset($data['isMotionDetected'])) {
