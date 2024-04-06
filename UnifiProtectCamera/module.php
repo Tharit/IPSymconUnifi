@@ -16,7 +16,7 @@ class UnifiProtectCamera extends IPSModule
         $this->RegisterPropertyString('uuid', '');
 
         // variables
-        $this->RegisterVariableInteger("Connected", "Connected");
+        $this->RegisterVariableBoolean("Connected", "Connected");
         $this->RegisterVariableInteger("LastMotion", "Last Motion", "~UnixTimestamp");
         $this->RegisterVariableBoolean("IsMotionDetected", "Is Motion Detected", "~Motion");
         $this->RegisterVariableBoolean("IsSmartDetected", "Is Smart Detected", "~Motion");
