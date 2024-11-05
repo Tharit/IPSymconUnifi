@@ -198,6 +198,7 @@ trait CustomWebSocketClient {
         
         $this->MUSetBuffer('Data', '');
         $this->MUSetBuffer('State', 0);
+        $this->MUSetBuffer('LastStateChange', time());
         $this->MUSetBuffer('PayloadType', 0);
         $this->MUSetBuffer('PayloadData', '');
         $this->MUSetBuffer('PingPending', false);
@@ -229,6 +230,11 @@ trait CustomWebSocketClient {
 
                     $this->WSCSend('Ping', WebSocketOPCode::ping);
                     $this->MUSetBuffer('PingPending', true);
+                } else if($state == 1) {
+                    $lastStateChange = $this->MUGetBuffer('LastStateChange');
+                    if(time() - $lastStateChange > 15000) {
+                        $this->WSCDisconnect();
+                    }
                 }
                 break;
             case 'Reconnect':
@@ -308,6 +314,7 @@ trait CustomWebSocketClient {
                     // if both get triggered, that is also fine
                     if($this->MUGetBuffer('CanReconnect')) {
                         $this->MUSetBuffer('State', 4);
+                        $this->MUSetBuffer('LastStateChange', time());
                         IPS_RunScriptText('IPS_Sleep(1000); IPS_RequestAction(' . $this->InstanceID . ', "WSC", "Reconnect");');
                     } else {
                         $this->WSCResetState();
@@ -346,6 +353,7 @@ trait CustomWebSocketClient {
         //$this->SendDebug('Send Handshake', $SendData, 0);
 
         $this->MUSetBuffer('State', 1);
+        $this->MUSetBuffer('LastStateChange', time());
 
         $JSON['DataID'] = '{79827379-F36E-4ADA-8A95-5F8D1DC92FA9}';
         $JSON['Buffer'] = utf8_encode($SendData);
@@ -374,6 +382,7 @@ trait CustomWebSocketClient {
         }
         
         $this->MUSetBuffer('State', 3);
+        $this->MUSetBuffer('LastStateChange', time());
         
         $attempt = $this->MUGetBuffer('Attempt');
 
@@ -433,6 +442,7 @@ trait CustomWebSocketClient {
                     }
                     $this->MUSetBuffer('Data', '');
                     $this->MUSetBuffer('State', 2);
+                    $this->MUSetBuffer('LastStateChange', time());
                     $this->MUGetBuffer('Attempt', 0);
                     $this->WSCOnConnect();
 
@@ -495,6 +505,7 @@ trait CustomWebSocketClient {
             case WebSocketOPCode::close:
                 $this->WSCSend('', WebSocketOPCode::close);
                 $this->MUSetBuffer('State', 3);
+                $this->MUSetBuffer('LastStateChange', time());
                 return;
             case WebSocketOPCode::text:
             case WebSocketOPCode::binary:
