@@ -201,10 +201,10 @@ class UnifiProtect extends IPSModule
                 $script = $this->ReadPropertyInteger('script');
                 if($script && @IPS_GetScript($script)) {
                     IPS_RunScriptEx($script, [
-                        "Data" => [
+                        "Data" => json_encode([
                             "Action" => $actionJSON,
                             "Data" => $dataJSON
-                        ]
+                        ])
                     ]);
                 }
             }

@@ -95,6 +95,9 @@ class UnifiProtectCamera extends IPSModule
                 $this->SetValue('IsMotionDetected', $data['isMotionDetected']);
             }
         }
+        // @TODO:
+        // if isRecording is false, always set to false..
+        // otherwise use events to turn this on as well!
         if(isset($data['isSmartDetected'])) {
             $value = $this->GetValue('IsSmartDetected');
             if($value != $data['isSmartDetected']) {
