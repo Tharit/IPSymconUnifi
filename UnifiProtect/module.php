@@ -202,8 +202,8 @@ class UnifiProtect extends IPSModule
                 if($script && @IPS_GetScript($script)) {
                     IPS_RunScriptEx($script, [
                         "Data" => [
-                            "Action": $actionJSON,
-                            "Data": $dataJSON
+                            "Action" => $actionJSON,
+                            "Data" => $dataJSON
                         ]
                     ]);
                 }
