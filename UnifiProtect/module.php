@@ -196,6 +196,18 @@ class UnifiProtect extends IPSModule
                 "DataID" => "{E2D9573A-39CC-49AC-A2AA-FB7A619A7970}",
                 "Buffer" => json_encode(["id" => $actionJSON['id'], "data" => $dataJSON])
             ]));
+
+            if($actionJSON['modelKey'] === 'event') {
+                $script = $this->ReadPropertyInteger('script');
+                if($script && @IPS_GetScript($script)) {
+                    IPS_RunScriptEx($script, [
+                        "Data" => [
+                            "Action": $actionJSON,
+                            "Data": $dataJSON
+                        ]
+                    ]);
+                }
+            }
         } else {
             $this->SendDebug('data', $action . ' ' . $data, 0);
         }
