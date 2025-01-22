@@ -66,6 +66,7 @@ class UnifiProtectCamera extends IPSModule
         $data = json_decode($data, true);
         $data = json_decode($data['Buffer'], true);
 
+        $id = $data['id'];
         $action = $data['action'];
         $data = $data['data'];
 
@@ -102,7 +103,7 @@ class UnifiProtectCamera extends IPSModule
             if($value != isSmartDetected) {
                 $this->SetValue('IsSmartDetected', $isSmartDetected);
             }
-        } else if($data['id'] === $uuid) {
+        } else if($id === $uuid) {
             $this->SendDebug('Camera Data', json_encode(['action' => $action, 'data' => $data]), 0);
         
             if(isset($data['featureFlags'])) {
