@@ -78,8 +78,10 @@ class UnifiProtectCamera extends IPSModule
             $events = $this->MUGetBuffer('Events');
             $doUpdateBuffer = false;
             if($action['action'] === 'add') {
-                $events[$action['id']] = $event;
-                $doUpdateBuffer = true;
+                if(!isset($action['end'])) {
+                    $events[$action['id']] = $data;
+                    $doUpdateBuffer = true;
+                }
             } else if($action['action'] === 'update') {
                 foreach($events as $id => &$obj) {
                     if($id === $action['id']) {
