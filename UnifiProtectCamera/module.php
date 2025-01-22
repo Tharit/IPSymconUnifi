@@ -100,7 +100,7 @@ class UnifiProtectCamera extends IPSModule
             }
             $isSmartDetected = count($events) > 0;
             $value = $this->GetValue('IsSmartDetected');
-            if($value != isSmartDetected) {
+            if($value != $isSmartDetected) {
                 $this->SetValue('IsSmartDetected', $isSmartDetected);
             }
         } else if($id === $uuid) {
