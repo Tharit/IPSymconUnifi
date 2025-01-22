@@ -27,7 +27,7 @@ class UnifiProtectCamera extends IPSModule
         $uuid = $this->ReadPropertyString('uuid');
         $this->SetReceiveDataFilter('.*'.preg_quote('\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
 
-        $this->MUSetBuffer('Events', null);
+        $this->MUSetBuffer('Events', []);
     }
 
     private function SetupVariables($data) {
