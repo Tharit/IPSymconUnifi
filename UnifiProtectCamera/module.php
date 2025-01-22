@@ -25,7 +25,7 @@ class UnifiProtectCamera extends IPSModule
         $this->RegisterVariableBoolean("IsSmartDetected", "Is Smart Detected", "~Motion");
 
         $uuid = $this->ReadPropertyString('uuid');
-        $this->SetReceiveDataFilter('.*'.preg_quote('\"id\":\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
+        $this->SetReceiveDataFilter('.*'.preg_quote('\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
 
         $this->MUSetBuffer('Events', null);
     }
@@ -72,10 +72,8 @@ class UnifiProtectCamera extends IPSModule
 
         $uuid = $this->ReadPropertyString('uuid');
         
-        $this->SendDebug('Camera Data', json_encode(['action' => $action, 'data' => $data]), 0);
-
         if($action && $action['modelKey'] === 'event' && $action['recordModel'] === 'camera' && $action['recordId'] === $uuid) {
-            //$this->SendDebug('Camera Event', json_encode(['action' => $action, 'data' => $data]), 0);
+            $this->SendDebug('Camera Event', json_encode(['action' => $action, 'data' => $data]), 0);
 
             $events = $this->MUGetBuffer('Events');
             $doUpdateBuffer = false;
@@ -106,7 +104,7 @@ class UnifiProtectCamera extends IPSModule
                 $this->SetValue('IsSmartDetected', $isSmartDetected);
             }
         } else if($id === $uuid) {
-            //$this->SendDebug('Camera Data', json_encode(['action' => $action, 'data' => $data]), 0);
+            $this->SendDebug('Camera Data', json_encode(['action' => $action, 'data' => $data]), 0);
         
             if(isset($data['featureFlags'])) {
                 $this->SetupVariables($data['featureFlags']);
