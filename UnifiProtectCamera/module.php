@@ -71,7 +71,7 @@ class UnifiProtectCamera extends IPSModule
 
         $uuid = $this->ReadPropertyString('uuid');
         
-        if($action['modelKey'] === 'event' && $action['recordModel'] === 'camera' && $action['recordId'] === $uuid) {
+        if($action && $action['modelKey'] === 'event' && $action['recordModel'] === 'camera' && $action['recordId'] === $uuid) {
             $this->SendDebug('Camera Event', json_encode(['action' => $action, 'data' => $data]), 0);
 
             $events = $this->MUGetBuffer('Events');

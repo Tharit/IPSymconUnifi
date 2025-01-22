@@ -257,7 +257,7 @@ class UnifiProtect extends IPSModule
         foreach($bootstrap['cameras'] as $camera) {
             $this->SendDataToChildren(json_encode([
                 "DataID" => "{E2D9573A-39CC-49AC-A2AA-FB7A619A7970}",
-                "Buffer" =>json_encode(["id"=>$camera["id"],"data"=>$camera])
+                "Buffer" =>json_encode(["id"=>$camera["id"],"action"=>null,"data"=>$camera])
             ]));
         }
 
