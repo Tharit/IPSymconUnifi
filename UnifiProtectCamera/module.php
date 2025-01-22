@@ -55,7 +55,7 @@ class UnifiProtectCamera extends IPSModule
         parent::ApplyChanges();
 
         $uuid = $this->ReadPropertyString('uuid');
-        $this->SetReceiveDataFilter('.*'.preg_quote('\"id\":\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
+        $this->SetReceiveDataFilter('.*'.preg_quote('\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
 
         if($this->HasActiveParent()) {
             $this->RequestInit();
