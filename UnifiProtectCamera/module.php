@@ -3,9 +3,12 @@
 /*
 
 */
-
+require_once(__DIR__ . '/../libs/ModuleUtilities.php');
+    
 class UnifiProtectCamera extends IPSModule
 {
+    use ModuleUtilities;
+
     public function Create()
     {
         //Never delete this line!
@@ -23,6 +26,8 @@ class UnifiProtectCamera extends IPSModule
 
         $uuid = $this->ReadPropertyString('uuid');
         $this->SetReceiveDataFilter('.*'.preg_quote('\"id\":\"'.($uuid ? $uuid : 'xxxxxxxx').'\"').'.*');
+
+        $this->MUSetBuffer('Events', null);
     }
 
     private function SetupVariables($data) {
@@ -61,50 +66,81 @@ class UnifiProtectCamera extends IPSModule
         $data = json_decode($data, true);
         $data = json_decode($data['Buffer'], true);
 
-        $uuid = $this->ReadPropertyString('uuid');
-        if($data['id'] !== $uuid) return;
-
+        $action = $data['action'];
         $data = $data['data'];
 
-        if(isset($data['featureFlags'])) {
-            $this->SetupVariables($data['featureFlags']);
-        }
+        $uuid = $this->ReadPropertyString('uuid');
+        
+        if($action['modelKey'] === 'event' && $action['recordModel'] === 'camera' && $action['recordId'] === $uuid) {
+            $this->SendDebug('Camera Event', json_encode(['action' => $action, 'data' => $data]), 0);
 
-        if(isset($data['lastRing']) && $this->GetIDForIdent('LastRing')) {
-            $value = $this->GetValue('LastRing');
-            if($value != $data['lastRing']) {
-                $this->SetValue('LastRing', round($data['lastRing']/1000));
+            $events = $this->MUGetBuffer('Events');
+            $doUpdateBuffer = false;
+            if($action['action'] === 'add') {
+                $events[$action['id']] = $event;
+                $doUpdateBuffer = true;
+            } else if($action['action'] === 'update') {
+                foreach($events as $id => &$obj) {
+                    if($id === $action['id']) {
+                        if(isset($action['end'])) {
+                            unset($events[$id]);
+                        } else {
+                            foreach($data as $key => $value) {
+                                $obj[$key] = $value;
+                            }
+                        }
+                        $doUpdateBuffer = true;
+                        break;
+                    }
+                }
             }
-        }
-        if(isset($data['lastMotion'])) {
-            $value = $this->GetValue('LastMotion');
-            if($value != $data['lastMotion']) {
-                $this->SetValue('LastMotion', round($data['lastMotion']/1000));
+            if($doUpdateBuffer) {
+                $this->MUSetBuffer('Events', $events);
             }
-        }
-        if(isset($data['state'])) {
-            $value = $this->GetValue('Connected');
-            $newValue = ($data['state'] == 'CONNECTED');
-            if($value != $newValue) {
-                $this->SetValue('Connected', $newValue);
-            }
-        }
-        if(isset($data['isMotionDetected'])) {
-            $value = $this->GetValue('IsMotionDetected');
-            if($value != $data['isMotionDetected']) {
-                $this->SetValue('IsMotionDetected', $data['isMotionDetected']);
-            }
-        }
-        // @TODO:
-        // if isRecording is false, always set to false..
-        // otherwise use events to turn this on as well!
-        if(isset($data['isSmartDetected'])) {
+            $isSmartDetected = count($events) > 0;
             $value = $this->GetValue('IsSmartDetected');
-            if($value != $data['isSmartDetected']) {
-                $this->SetValue('IsSmartDetected', $data['isSmartDetected']);
+            if($value != isSmartDetected) {
+                $this->SetValue('IsSmartDetected', $isSmartDetected);
+            }
+        } else if($data['id'] === $uuid) {
+            $this->SendDebug('Camera Data', json_encode(['action' => $action, 'data' => $data]), 0);
+        
+            if(isset($data['featureFlags'])) {
+                $this->SetupVariables($data['featureFlags']);
+            }
+
+            if(isset($data['lastRing']) && $this->GetIDForIdent('LastRing')) {
+                $value = $this->GetValue('LastRing');
+                if($value != $data['lastRing']) {
+                    $this->SetValue('LastRing', round($data['lastRing']/1000));
+                }
+            }
+            if(isset($data['lastMotion'])) {
+                $value = $this->GetValue('LastMotion');
+                if($value != $data['lastMotion']) {
+                    $this->SetValue('LastMotion', round($data['lastMotion']/1000));
+                }
+            }
+            if(isset($data['state'])) {
+                $value = $this->GetValue('Connected');
+                $newValue = ($data['state'] == 'CONNECTED');
+                if($value != $newValue) {
+                    $this->SetValue('Connected', $newValue);
+                }
+            }
+            if(isset($data['isMotionDetected'])) {
+                $value = $this->GetValue('IsMotionDetected');
+                if($value != $data['isMotionDetected']) {
+                    $this->SetValue('IsMotionDetected', $data['isMotionDetected']);
+                }
+            }
+            if(isset($data['isRecording'])) {
+                $value = $this->GetValue('IsSmartDetected');
+                if(!$data['isRecording']) {
+                    $this->SetValue('IsSmartDetected', false);
+                }
             }
         }
-        $this->SendDebug('Data', json_encode($data), 0);
     }
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data)
