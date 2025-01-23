@@ -78,7 +78,9 @@ class UnifiProtectCamera extends IPSModule
             $events = $this->MUGetBuffer('Events');
             $doUpdateBuffer = false;
             if($action['action'] === 'add') {
-                if(!isset($data['end'])) {
+                if(!isset($data['end']) && isset($data['type']) && (
+                    $data['type'] === 'smartAudioDetect' || $data['type'] === 'smartDetectZone')
+                ) {
                     $events[$action['id']] = $data;
                     $doUpdateBuffer = true;
                 }
