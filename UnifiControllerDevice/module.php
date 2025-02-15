@@ -165,6 +165,18 @@ class UnifiController extends IPSModule
         return $this->Request($ip, '/proxy/network/api/s/default/stat/sta', $cookie, $csrfToken);
     }
 
+    public function ReconnectClientDevice(string $mac) {
+        $this->RefreshToken();
+        $parentID = $this->GetConnectionID();
+        $ip = IPS_GetProperty($parentID, 'Host');
+        $cookie = $this->MUGetBuffer('cookie');
+        $csrfToken = $this->MUGetBuffer('x-csrf-token');
+        return $this->Request($ip, '/proxy/network/api/s/default/cmd/stamgr', $cookie, $csrfToken, json_encode([
+            'mac' => $mac,
+            'cmd' => 'kick-sta'
+        ]));
+    }
+
     public function GetAccessDevices(string $mac) {
         $this->RefreshToken();
         $parentID = $this->GetConnectionID();

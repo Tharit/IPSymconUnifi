@@ -4,19 +4,23 @@ trait UnifiAPI {
     private function Request($ip, $path, $cookie, $csrfToken = '', $post = null, $verb = 'POST') {
         $url = "https://" . $ip . $path;
 
+        $header = array('Cookie: '.$cookie, 'Accept: application/json');
+        if($csrfToken) {
+            $header[] = 'x-csrf-token: '. $csrfToken;
+        }
+        
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
+        
         if($post) {
             if($verb === 'POST') {
                 curl_setopt($ch, CURLOPT_POST, 1);
             } else {
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $verb);
             }
+            $header[] = 'Content-Type: application/json';
         }
-        $header = array('Cookie: '.$cookie, 'Accept: application/json');
-        if($csrfToken) {
-            $header[] = 'x-csrf-token: '. $csrfToken;
-        }
+
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
