@@ -32,7 +32,7 @@ trait UnifiAPI {
         $result = curl_exec($ch);
         curl_close($ch);
 
-        $this->SendDebug('Request', 'URL: ' . $url . "| Cookie: " . $cookie, 0);
+        $this->SendDebug('Request', 'URL: ' . $url, 0);
 
         return @json_decode($result, true);
     }
@@ -47,7 +47,7 @@ trait UnifiAPI {
         curl_setopt($ch, CURLOPT_HEADERFUNCTION, function( $curl, $header_line ) use (&$headers) {
             $idx = strpos($header_line,':');
             if($idx >= 1) {
-                $name = substr($header_line, 0, $idx);
+                $name = strtolower(substr($header_line, 0, $idx));
                 $value = trim(substr($header_line, $idx + 1));
                 $headers[$name] = $value;
             }
@@ -68,15 +68,15 @@ trait UnifiAPI {
         curl_exec($ch);
         curl_close($ch);
 
-        if(!isset($headers['Set-Cookie'])) {
+        if(!isset($headers['set-cookie'])) {
             $this->SendDebug('Cookie', 'Login failed', 0);
             return false;
         }
-        $cookie = explode(';', $headers['Set-Cookie'])[0];
+        $cookie = explode(';', $headers['set-cookie'])[0];
 
         $csrfToken = '';
-        if (isset($headers['X-CSRF-Token'])) {
-            $csrfToken = $headers['X-CSRF-Token'];
+        if (isset($headers['x-csrf-token'])) {
+            $csrfToken = $headers['x-csrf-token'];
         }
 
         $this->SendDebug('Cookie', $cookie, 0);
