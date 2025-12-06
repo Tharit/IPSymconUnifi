@@ -225,8 +225,9 @@ class UnifiProtect extends IPSModule
     //------------------------------------------------------------------------------------
     // external methods
     //------------------------------------------------------------------------------------
-    public function GetSnapshot($id) {
+    public function GetSnapshot(string $id) {
         $this->RefreshToken();
+        $parentID = $this->GetConnectionID();
         $ip = IPS_GetProperty($parentID, 'Host');
         $cookie = $this->MUGetBuffer('cookie');
         $csrfToken = $this->MUGetBuffer('x-csrf-token');
