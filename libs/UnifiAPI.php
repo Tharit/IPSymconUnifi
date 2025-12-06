@@ -1,7 +1,7 @@
 <?php
 
 trait UnifiAPI {
-    private function Request($ip, $path, $cookie, $csrfToken = '', $post = null, $verb = 'POST') {
+    private function Request($ip, $path, $cookie, $csrfToken = '', $post = null, $verb = 'POST', $decodeJson = true) {
         $url = "https://" . $ip . $path;
 
         $header = array('Cookie: '.$cookie, 'Accept: application/json');
@@ -33,6 +33,8 @@ trait UnifiAPI {
         curl_close($ch);
 
         $this->SendDebug('Request', 'URL: ' . $url, 0);
+
+        if(!$decodeJson) return $result;
 
         return @json_decode($result, true);
     }

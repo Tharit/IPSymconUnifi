@@ -231,7 +231,7 @@ class UnifiProtect extends IPSModule
         $ip = IPS_GetProperty($parentID, 'Host');
         $cookie = $this->MUGetBuffer('cookie');
         $csrfToken = $this->MUGetBuffer('x-csrf-token');
-        return $this->Request($ip, "/proxy/protect/api/cameras/$id/snapshot?force=true", $cookie, $csrfToken);
+        return $this->Request($ip, "/proxy/protect/api/cameras/$id/snapshot?force=true", $cookie, $csrfToken, null, 'POST', false);
     }
 
     //------------------------------------------------------------------------------------
