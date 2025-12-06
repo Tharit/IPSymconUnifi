@@ -225,12 +225,49 @@ class UnifiProtect extends IPSModule
     //------------------------------------------------------------------------------------
     // external methods
     //------------------------------------------------------------------------------------
-    
+    public function GetSnapshot($id) {
+        $this->RefreshToken();
+        $ip = IPS_GetProperty($parentID, 'Host');
+        $cookie = $this->MUGetBuffer('cookie');
+        $csrfToken = $this->MUGetBuffer('x-csrf-token');
+        return $this->Request($ip, "proxy/protect/api/cameras/$id/snapshot?force=true", $cookie, $csrfToken);
+    }
 
     //------------------------------------------------------------------------------------
     // module internals
     //------------------------------------------------------------------------------------
+    private function RefreshToken() {
+        $cookie = $this->MUGetBuffer('cookie');
+        if(!$cookie) return;
+        $parts = explode('=', $cookie);
+        $token = $parts[1];
+
+        $parts = explode('.', $token);
+        $tokenData = json_decode(base64_decode($parts[1]), true);
+        $expiration = $tokenData['exp'];
+        $isValid = time() + 5 * 60 < $expiration;
+
+        if($isValid) return;
+        
+        $this->SendDebug('RefreshToken', 'Token expired', 0);
+
+        $parentID = $this->GetConnectionID();
+        $ip = IPS_GetProperty($parentID, 'Host');
+        $username = $this->ReadPropertyString("username");
+        $password = $this->ReadPropertyString("password");
+        $res = $this->Login($ip, $username, $password);
+        if($res === false || !isset($res['cookie']) || $res['cookie'] === false) {
+            $this->SendDebug('RefreshToken', 'Failed to get cookie', 0);
+            $this->WSCDisconnect();
+            return;
+        }
+        $this->MUSetBuffer('cookie', $res['cookie']);
+        $this->MUSetBuffer('x-csrf-token', $res['x-csrf-token']);
+    }
+
     private function ResetState() {
+        $this->MUSetBuffer('cookie', '');
+        $this->MUSetBuffer('x-csrf-token', '');
     }
 
     private function Bootstrap() {
@@ -245,8 +282,11 @@ class UnifiProtect extends IPSModule
             return null;
         }
         $cookie = $res['cookie'];
+
+        $this->MUSetBuffer('cookie', $res['cookie']);
+        $this->MUSetBuffer('x-csrf-token', $res['x-csrf-token']);
         
-        $bootstrap = $this->Request($ip, '/proxy/protect/api/bootstrap', $cookie);
+        $bootstrap = $this->Request($ip, '/proxy/protect/api/bootstrap', $cookie, $res['x-csrf-token']);
         $this->SendDebug('Bootstrap', json_encode($bootstrap), 0);
         if(!$bootstrap || !isset($bootstrap['lastUpdateId'])) {
             $this->SendDebug('Login', 'Failed to load bootstrap data', 0);
